@@ -1,0 +1,41 @@
+
+version: 2
+
+sources:
+  - name: covid
+    description: 'Covid statistics in Belgium'
+    database: "{{ target.database }}"
+    schema: "{{ target.schema }}"
+    tables:
+      - name: vacc_muni_cum
+        description: 'Vaccines administered per week and per municipality'
+      - name: cases_muni
+        description: 'New case per day and per municipality'
+      - name: cases_muni_cum
+        description: 'Total cases per municipality'
+      - name: population
+        description: 'Population per municipality year 2021'
+      - name: hospitalisation
+        description: 'Hospitalisation per province for each day'
+
+
+
+
+models:
+  - name: muni_vacc_filtered
+    description: ""
+
+  - name: muni_cases_filtered
+    description: ""
+
+  - name: model2
+    description: "A starter dbt model"
+    columns:
+      - name: id
+        description: "The primary key for this table"
+        tests:
+          - unique
+          - not_null
+
+
+
