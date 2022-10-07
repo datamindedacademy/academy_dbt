@@ -5,7 +5,7 @@ sources:
   - name: covid
     description: 'Covid statistics in Belgium'
     database: "{{ target.database }}"
-    schema: "{{ target.schema }}"
+    schema: PUBLIC
     tables:
       - name: vacc_muni_cum
         description: 'Vaccines administered per week and per municipality'
