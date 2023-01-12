@@ -3,15 +3,14 @@ version: 2
 sources:
     - name: training
       description: 'Timestamps and Schedule tables used as source for our project'
-      database: "{{ target.database }}"
-      schema: PUBLIC
+      database: dbtworkshop
+      schema: public
       tables:
        - name: timestamps
          description: 'Raw event data coming from the measuring boxes'
 
        - name: schedule
          description: 'TV program'
-
 
 models:
   - name: session
@@ -46,7 +45,3 @@ models:
         tests:
           - unique
           - not_null
-
-
-
-

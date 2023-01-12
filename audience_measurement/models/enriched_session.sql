@@ -2,7 +2,7 @@ WITH enriched_sessions as (
     select session.users       as users,
            schedule.channel as channel,
            session.beginning       as session_beginning,
-           schedule.beginning as schedule_beginning,
+           schedule.start as schedule_beginning,
            session.finish           as session_end,
            schedule.stop      as schedule_end,
            schedule.program           as program,
@@ -10,14 +10,10 @@ WITH enriched_sessions as (
            session.channel         as common_channel
     FROM {{ ref('session') }} as session
              INNER JOIN {{ source('training', 'schedule') }} as schedule
-        ON session.channel = schedule.channel
-            AND session.beginning < schedule.stop
-            AND session.finish > schedule.beginning
-    WHERE
-        session.finish >= '{{ var("date") }}'
-      AND session.finish
-        < dateadd(day, {{ var("num_days") }}, '{{ var("date") }}')
-    )
+    ON session.channel = schedule.channel
+        AND session.beginning < schedule.stop
+        AND session.finish > schedule.start
+)
 
 SELECT users,
        common_channel,
@@ -27,4 +23,3 @@ SELECT users,
        program,
        genre
 FROM enriched_sessions
-

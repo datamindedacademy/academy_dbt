@@ -1,5 +1,8 @@
-target/
+audience_measurement/target
 dbt_packages/
 logs/
 .idea
-*.zip
+.venv
+venv
+*~
+/audience_measurement/logs/

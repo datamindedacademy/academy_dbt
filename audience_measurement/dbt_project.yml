@@ -1,21 +1,20 @@
-
 # Name your project! Project names should contain only lowercase characters
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
-name: 'dbt_audience_measurement'
-version: '1.0.0'
+name: 'dbt_audiance_measurment'
+version: '1.1.0'
 config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
-profile: 'audience_measurement'
+profile: 'audiance_measurment'
 
 # These configurations specify where dbt should look for different types of files.
 # The `source-paths` config, for example, states that models in this project can be
 # found in the "models/" directory. You probably won't need to change these!
-source-paths: ["models"]
+model-paths: ["models"]
 analysis-paths: ["analysis"]
 test-paths: ["tests"]
-data-paths: ["data"]
+seed-paths: ["data"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
@@ -32,8 +31,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 # as tables. These settings can be overridden in the individual model files
 # using the `{{ config(...) }}` macro.
 models:
-  dbt_training:
-    # Config indicated by + and applies to all files under models/example/
+    # Config indicated by + and applies to all files under models/
     +materialized: view
 
 

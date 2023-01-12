@@ -1,0 +1,19 @@
+channel,start,stop,program,genre
+4,2022-01-18 15:00:00,2022-01-18 16:00:00,MASH,comedy
+5,2022-01-18 14:00:00,2022-01-18 15:00:00,The Great Belgian Bake Off,reality
+5,2022-01-18 16:00:00,2022-01-18 17:00:00,Sesame Street,children
+6,2022-01-18 15:00:00,2022-01-18 16:00:00,Doctor Who,science fiction
+4,2022-01-19 14:10:00,2022-01-19 16:00:00,MASH,comedy
+5,2022-01-19 15:10:00,2022-01-19 17:00:00,Sesame Street,children
+4,2022-01-19 15:10:00,2022-01-19 17:00:00,Data Engeneering News,informative
+6,2022-01-19 13:10:00,2022-01-19 15:00:00,The Secret Life of Bart Severy,documentary
+4,2022-01-18 14:00:00,2022-01-18 15:00:00,Game of Thrones,drama
+4,2022-01-18 16:00:00,2022-01-18 17:00:00,Data Engeneering News,informative
+5,2022-01-18 15:00:00,2022-01-18 16:00:00,Wordl Cup: Belgium - Serbia,sport
+6,2022-01-18 14:00:00,2022-01-18 15:00:00,The Secret Life of Bart Severy,documentary
+6,2022-01-18 16:00:00,2022-01-18 17:00:00,Last Week Tonight,news satire
+5,2022-01-19 13:10:00,2022-01-19 15:00:00,The Great Belgian Bake Off,reality
+6,2022-01-19 14:10:00,2022-01-19 16:00:00,Doctor Who,science fiction
+4,2022-01-19 13:10:00,2022-01-19 15:00:00,Game of Thrones,drama
+5,2022-01-19 14:10:00,2022-01-19 16:00:00,Wordl Cup: Belgium - Serbia,sport
+6,2022-01-19 15:10:00,2022-01-19 17:00:00,Last Week Tonight,news satire

@@ -1,8 +1,8 @@
 image:
   file: .gitpod.Dockerfile
 checkoutLocation: '.'
-#tasks:
-#  - name: Clean root and grab useful exercises.
-#    before: |
-#      rm -rfv ./{*,.*}
-#      sudo mv /home/gitpod/dbt_audiance_measurment/* .
+vscode:
+  extensions:
+    - innoverio.vscode-dbt-power-user
+    - mtxr.sqltools-driver-pg
+    - mtxr.sqltools
