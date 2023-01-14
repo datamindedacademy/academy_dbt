@@ -47,6 +47,16 @@ models:
           - unique
           - not_null
 
+  
+  - name: avg_discount
+
+  - name: total_orders
+
+  - name: customer_abt
+
+  - name: customer_abt2
+    
+
 
 
 
