@@ -1,0 +1,14 @@
+
+version: 2
+
+
+
+models:
+  - name: Example
+    description: "This is an example pf a model"
+    columns:
+      - name: id
+        description: "The primary key for this table"
+        tests:
+          - unique
+          - not_null
