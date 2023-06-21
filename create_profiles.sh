@@ -3,7 +3,7 @@
 # Read the user input     
 echo "Enter the username. The user name is your <firstname>"
 read user  
-schema=dbt_$user
+schema=$user
 echo $user $schema
 
 # Read the password, do not display it and display stars instead 
