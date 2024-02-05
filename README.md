@@ -4,8 +4,7 @@
 [![Open in
 Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/datamindedacademy/academy_dbt.git)
 
-This repository is hosting the exercises provided to students in the context of the `Relational DataBases` course of the Data Minded Academy.
-This specific exercise is focused on dbt.
+This repository is hosting the exercises provided to students in the context of the dbt course of the Data Minded Academy.
 
 To start click on "Open in Gitpod" button
 
@@ -13,16 +12,7 @@ Once it is started, run the script ```./create_profiles.sh``` which will generat
 with Snowflake Data Warehouse. DBT is already installed there, so everything
 is ready for you first dbt projects.
 
-### 1) Your first dbt project
-Enter the folder "my_first_dbt_project" explore the files in folders:
-- models
-- tests
-
-Try running the following commands:
-- dbt run
-- dbt test
-
-### 2) audience_measurement
+### audience_measurement
 Enter the folder "audience_measurement" explore the files in folders:
 - models
 - tests

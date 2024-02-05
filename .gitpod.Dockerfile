@@ -1,4 +1,4 @@
-FROM gitpod/workspace-full:latest-2022-01-21-dazzle-v1
+FROM gitpod/workspace-full:2024-01-24-09-19-42
 
 # This env var is used to force the 
 # rebuild of the Gitpod environment when needed
@@ -12,9 +12,12 @@ RUN apt-get update && \
     rm -rf /var/cache/apt/* && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/* && \
-    pip install dbt-snowflake
+    pip install "dbt-core==1.7.7" "dbt-snowflake==1.7.1"
 
 # Copy exercices content into the image
 # COPY --chown=gitpod content/ /home/gitpod/dbt_audiance_measurment
 
 USER gitpod
+
+# Create empty .dbt directory otherwise dbt complains
+RUN mkdir /home/gitpod/.dbt

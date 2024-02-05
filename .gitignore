@@ -3,5 +3,10 @@ dbt_packages/
 logs/
 .idea
 *.zip
+.docker-root/
+.cargo/
+.gitpod/
+.pyenv_mirror/
+.vscode-remote/
 /audience_measurement/logs/
 /venv/
