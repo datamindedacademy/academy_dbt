@@ -1,4 +1,4 @@
-FROM gitpod/workspace-full:2024-09-05-09-30-51
+FROM gitpod/workspace-full:2023-05-02-12-55-13
 
 # This env var is used to force the 
 # rebuild of the Gitpod environment when needed
@@ -16,7 +16,6 @@ RUN apt-get update && \
 USER gitpod
 
 RUN pip install "dbt-core==1.8.6" "dbt-snowflake==1.8.3"
-
 
 # Create empty .dbt directory otherwise dbt complains
 RUN mkdir /home/gitpod/.dbt
