@@ -1,4 +1,4 @@
-FROM gitpod/workspace-full:2023-05-02-12-55-13
+FROM gitpod/workspace-full:2024-09-05-09-30-51
 
 # This env var is used to force the 
 # rebuild of the Gitpod environment when needed
@@ -12,10 +12,7 @@ RUN apt-get update && \
     rm -rf /var/cache/apt/* && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/* && \
-    pip install "dbt-core==1.7.7" "dbt-snowflake==1.7.1"
-
-# Copy exercices content into the image
-# COPY --chown=gitpod content/ /home/gitpod/dbt_audiance_measurment
+    pip install "dbt-core==1.8.6" "dbt-snowflake==1.8.3"
 
 USER gitpod
 

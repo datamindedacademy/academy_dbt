@@ -3,7 +3,7 @@
 # Read the user input     
 echo -n "Enter your first name: "
 read firstname
-user=winterschool2024_$firstname
+user=summerschool2024_$firstname
 schema=dbt_$firstname
 
 # Read the password, do not display it and display stars instead 
@@ -45,7 +45,7 @@ echo "audience_measurement:
   outputs:
     dev:
       account: yw41113.eu-west-1
-      database: winterschool2024
+      database: summerschool2024
       password: $password
       role: student
       schema: $schema
@@ -58,7 +58,7 @@ testproject:
   outputs:
     dev:
       account: yw41113.eu-west-1
-      database: winterschool2024
+      database: summerschool2024
       password: $password
       role: student
       schema: $schema
@@ -71,7 +71,7 @@ covid:
   outputs:
     dev:
       account: yw41113.eu-west-1
-      database: winterschool2024
+      database: summerschool2024
       password: $password
       role: student
       schema: $schema
