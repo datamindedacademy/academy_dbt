@@ -44,7 +44,7 @@ mkdir -p /home/gitpod/.dbt/
 echo "audience_measurement:
   outputs:
     dev:
-      account: yw41113.eu-west-1
+      account: ic07601.eu-west-1
       database: summerschool2024
       password: $password
       role: student
@@ -57,7 +57,7 @@ echo "audience_measurement:
 testproject:
   outputs:
     dev:
-      account: yw41113.eu-west-1
+      account: ic07601.eu-west-1
       database: summerschool2024
       password: $password
       role: student
@@ -70,7 +70,7 @@ testproject:
 covid:
   outputs:
     dev:
-      account: yw41113.eu-west-1
+      account: ic07601.eu-west-1
       database: summerschool2024
       password: $password
       role: student

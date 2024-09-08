@@ -11,10 +11,12 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/cache/apt/* && \
     rm -rf /var/lib/apt/lists/* && \
-    rm -rf /tmp/* && \
-    pip install "dbt-core==1.8.6" "dbt-snowflake==1.8.3"
+    rm -rf /tmp/*
 
 USER gitpod
+
+RUN pip install "dbt-core==1.8.6" "dbt-snowflake==1.8.3"
+
 
 # Create empty .dbt directory otherwise dbt complains
 RUN mkdir /home/gitpod/.dbt
