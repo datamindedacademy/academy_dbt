@@ -20,6 +20,22 @@ models:
           - unique
           - not_null
 
+  - name: customer_stats
+    description: "Statistics about our customers"
+    columns:
+      - name: custkey
+        description: "The primary key for this table"
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              to: ref("customer")
+              field: c_custkey
+      - name: total_amount_spent
+        description: "The amount that this customer spent"
+        data_tests:
+          - not_null
+
 sources:
   - name: tpch
     database: SNOWFLAKE_SAMPLE_DATA
