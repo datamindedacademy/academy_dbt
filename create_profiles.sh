@@ -28,7 +28,7 @@ done
 # End reading password
 
 echo "Snowflake Username: $user"
-echo "Snowflake password: <not shown>"
+echo "Snowflake password: $password"
 echo "Snowflake schema: $schema"
 read -p "Does this look correct? (y/n) " -n 1 -r
 echo

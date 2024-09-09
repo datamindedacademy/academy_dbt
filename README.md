@@ -6,21 +6,20 @@ Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https:/
 
 This repository is hosting the exercises provided to students in the context of the dbt course of the Data Minded Academy.
 
-To start click on "Open in Gitpod" button
+To start click on "Open in Gitpod" button.
 
-Once it is started, run the script ```./create_profiles.sh``` which will generate connection
-with Snowflake Data Warehouse. DBT is already installed there, so everything
-is ready for you first dbt projects.
+### Connection to Snowflake
 
-### audience_measurement
-Enter the folder "audience_measurement" explore the files in folders:
-- models
-- tests
+In the first exercise, we will use `dbt init` to set up a connection to the Snowflake
+data warehouse.
 
+The connection details are not stored in the workspace itself (but in `~/.dbt/profiles.yml` instead)
+so every time the Gitpod workspace times out, the connection settings are lost. In that case, you can
+run the script `/workspace/create_profiles.sh` to re-generate this file easily.
 
-Try running the following commands:
-- dbt run (See the views created at DWH)
-- dbt test
+In case you want to experiment with dbt without Snowflake credentials, you can use the
+[dbt Playground](https://github.com/datamindedacademy/dbt_playground) Gitpod, which uses a local
+Postgres database as the data warehouse.
 
 ### Resources:
 - Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
