@@ -38,3 +38,7 @@ models:
 vars:
   report_interval_start: '1995-01-01'
   report_interval_end: '1995-03-31'
+  order_statuses:
+  - 'O'
+  - 'P'
+  - 'F'
