@@ -34,3 +34,7 @@ models:
     # Config indicated by + and applies to all files under models/example/
     example:
       +materialized: view
+
+vars:
+  report_interval_start: '1995-01-01'
+  report_interval_end: '1995-03-31'
