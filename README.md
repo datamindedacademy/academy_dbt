@@ -3,6 +3,7 @@
 
 [![Open in
 Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/datamindedacademy/academy_dbt.git)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/datamindedacademy/academy_dbt)
 
 This repository is hosting the exercises provided to students in the context of the dbt course of the Data Minded Academy.
 
