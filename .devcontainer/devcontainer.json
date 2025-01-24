@@ -1,0 +1,19 @@
+{
+    "name": "Custom Codespace Environment",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "innoverio.vscode-dbt-power-user@0.51.2",
+                "ms-python.python@2024.22.2",
+                "ms-python.debugpy",
+                "samuelcolvin.jinjahtml"
+            ]
+        }
+    },
+    "remoteUser": "root",
+    "features": {}
+}
