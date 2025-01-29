@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/devcontainers/python:3.11-bookworm
 ARG USERNAME=gitpod
-ARG USER_UID=1000
+ARG USER_UID=1234
 ARG USER_GID=$USER_UID
 
 # This env var is used to force the 
