@@ -1,5 +1,5 @@
 {
-    "name": "Custom Codespace Environment",
+    "name": "Academy dbt codespace",
     "build": {
         "dockerfile": "Dockerfile"
     },

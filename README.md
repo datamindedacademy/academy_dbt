@@ -7,7 +7,7 @@ Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https:/
 
 This repository is hosting the exercises provided to students in the context of the dbt course of the Data Minded Academy.
 
-To start click on "Open in Gitpod" button.
+To start click on "Open in codespaces" button.
 
 ### Connection to Snowflake
 
@@ -15,11 +15,11 @@ In the first exercise, we will use `dbt init` to set up a connection to the Snow
 data warehouse.
 
 The connection details are not stored in the workspace itself (but in `~/.dbt/profiles.yml` instead)
-so every time the Gitpod workspace times out, the connection settings are lost. In that case, you can
+so every time the workspace times out, the connection settings are lost. In that case, you can
 run the script `/workspace/create_profiles.sh` to re-generate this file easily.
 
 In case you want to experiment with dbt without Snowflake credentials, you can use the
-[dbt Playground](https://github.com/datamindedacademy/dbt_playground) Gitpod, which uses a local
+[dbt Playground](https://github.com/datamindedacademy/dbt_playground) workspace, which uses a local
 Postgres database as the data warehouse.
 
 ### Resources:
