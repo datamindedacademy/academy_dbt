@@ -1,8 +1,6 @@
 # Data Minded Academy - dbt
 ## Exercises Repository
 
-[![Open in
-Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/datamindedacademy/academy_dbt.git)
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/datamindedacademy/academy_dbt)
 
 This repository is hosting the exercises provided to students in the context of the dbt course of the Data Minded Academy.
@@ -28,3 +26,10 @@ Postgres database as the data warehouse.
 - Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support
 - Find [dbt events](https://events.getdbt.com) near you
 - Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices
+
+## Gitpod (legacy) workspace
+
+If you still have access to Gitpod, you can open this repository in a Gitpod enviroment by clicking:
+
+[![Open in
+Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/datamindedacademy/academy_dbt.git)

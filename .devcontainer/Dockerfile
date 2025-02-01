@@ -15,7 +15,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
-USER gitpod
+USER $USERNAME
 
 RUN pip install "dbt-core==1.9.1" "dbt-snowflake==1.9.0" --no-warn-script-location
 
