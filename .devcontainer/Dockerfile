@@ -17,7 +17,8 @@ RUN groupadd --gid $USER_GID $USERNAME \
 
 USER $USERNAME
 
-RUN pip install "dbt-core==1.9.1" "dbt-snowflake==1.9.0" --no-warn-script-location
+# Install dbt
+RUN pip install "dbt-core==1.10.17" "dbt-postgres==1.10.0" --no-warn-script-location
 
 # Create empty .dbt directory otherwise dbt complains
 RUN mkdir /home/gitpod/.dbt
