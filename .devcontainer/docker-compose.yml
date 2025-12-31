@@ -1,45 +1,43 @@
 version: '3.8'
 
 services:
-  # 1. Main Application (dbt)
+  # main dev container
   app:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        USERNAME: gitpod
-        USER_UID: 1234
     volumes:
       - ../..:/workspaces:cached
     command: sleep infinity
     depends_on:
       - db
 
-  # 2. PostgreSQL Database
   db:
-    image: postgres:15
+    image: postgres:17
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
-    volumes:
+    volumes: 
       - postgres-data:/var/lib/postgresql/data
+      # SQL files mounted to /docker-entrypoint-initdb.d/ are executed when the container first launches.
+      # We use it to populate the tpch schema and tables (with a tiny bit of data).
       - ../.devcontainer/tpch-data:/tpch-data:ro
       - ../.devcontainer/init-tpch.sql:/docker-entrypoint-initdb.d/init-tpch.sql:ro
 
-  # 3. pgAdmin 4
   pgadmin:
-    image: dpage/pgadmin4:8
+    image: dpage/pgadmin4:9
     restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: example
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-      PGADMIN_CONFIG_PROXY_X_HOST_COUNT: 1
+      PGADMIN_DEFAULT_PASSWORD: i_dont_think_this_password_is_ever_needed
+      PGADMIN_CONFIG_SERVER_MODE: 'False'  # Skip login screen
+      PGADMIN_CONFIG_PROXY_X_HOST_COUNT: 1  # Needed in Codespaces, see https://github.com/orgs/community/discussions/17918#discussioncomment-3005294 
       PGADMIN_CONFIG_PROXY_X_PREFIX_COUNT: 1
     volumes:
       # Mount server config to auto-populate the connection list
+      # Only the password (postgres) will need to be entered
       - ./servers.json:/pgadmin4/servers.json
     ports:
       - "5052:80"
