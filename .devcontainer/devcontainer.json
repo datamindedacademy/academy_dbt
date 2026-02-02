@@ -45,7 +45,6 @@
                 "sqltools.completionLanguages": ["sql", "sql-snowflake", "sql-postgres"]
             },
             "extensions": [
-                "innoverio.vscode-dbt-power-user",
                 "ms-python.python",
                 "ms-python.debugpy",
                 "samuelcolvin.jinjahtml",
