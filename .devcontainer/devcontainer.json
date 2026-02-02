@@ -8,8 +8,7 @@
     "forwardPorts": [5052, 5432],
 
     "containerEnv": {
-        "SHELL": "/bin/bash",
-        "DOCKER_API_VERSION": "1.43"
+        "SHELL": "/bin/bash"
     },
 
     "customizations": {
@@ -50,9 +49,5 @@
         }
     },
     
-    "remoteUser": "vscode",
-    "features": {
-        // Enable the docker CLI to interact with other containers (e.g. the postgres db)
-        "ghcr.io/devcontainers/features/docker-outside-of-docker:1.6.5": {}
-    }
+    "remoteUser": "vscode"
 }
