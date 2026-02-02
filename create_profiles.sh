@@ -47,6 +47,7 @@ echo "audience_measurement:
       account: ic07601.eu-west-1
       database: summerschool2024
       password: $password
+      authenticator: username_password_mfa
       role: student
       schema: $schema
       threads: 1
@@ -60,6 +61,7 @@ testproject:
       account: ic07601.eu-west-1
       database: summerschool2024
       password: $password
+      authenticator: username_password_mfa
       role: student
       schema: $schema
       threads: 1
@@ -73,6 +75,7 @@ covid:
       account: ic07601.eu-west-1
       database: summerschool2024
       password: $password
+      authenticator: username_password_mfa
       role: student
       schema: $schema
       threads: 1

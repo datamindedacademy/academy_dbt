@@ -1,9 +1,0 @@
-image:
-  file: .gitpod.Dockerfile
-checkoutLocation: '.'
-vscode:
-  extensions:
-    - innoverio.vscode-dbt-power-user@0.44.7
-    - ms-python.python@v2024.12.3
-    - ms-python.debugpy
-    - samuelcolvin.jinjahtml

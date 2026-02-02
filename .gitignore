@@ -10,3 +10,4 @@ logs/
 .vscode-remote/
 /audience_measurement/logs/
 /venv/
+*.csv

@@ -1,22 +1,63 @@
 {
     "name": "Academy dbt codespace",
-    "build": {
-        "dockerfile": "Dockerfile"
-    },
-    "containerEnv": {
-        "SHELL": "/bin/bash"
-    },
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    
+    // Forward DB (5432) and pgAdmin (5052)
+    "forwardPorts": [5052, 5432],
+
+    "containerEnv": {
+        "SHELL": "/bin/bash",
+        "DOCKER_API_VERSION": "1.43"
+    },
+
     "customizations": {
         "vscode": {
+            "settings": {
+                // .sql files can be used by both SQLTools as well as by dbt.
+                // This is kind of annoying.
+                // To make it work nicely, we treat .sql files inside common dbt directories as dbt code
+                // and everything else (e.g. SQLTools scratchpads) as regular sql
+                "files.associations": {
+                    "**/analyses/**/*.sql": "jinja-sql",
+                    "**/models/**/*.sql": "jinja-sql",
+                    "**/macros/**/*.sql": "jinja-sql",
+                    "**/tests/**/*.sql": "jinja-sql"
+                },
+                // Configure formatter for the dbt files
+                "[jinja-sql]": {
+                    "editor.defaultFormatter": "innoverio.vscode-dbt-power-user"
+                },
+                "sqltools.connections": [
+                    {
+                        "previewLimit": 50,
+                        "server": "db",
+                        "port": 5432,
+                        "driver": "PostgreSQL",
+                        "name": "postgres",
+                        "database": "postgres",
+                        "username": "postgres",
+                        "password": "postgres"
+                    }
+                ],
+                "sqltools.codelensLanguages": ["sql"],
+                "sqltools.completionLanguages": ["sql", "sql-snowflake", "sql-postgres"]
+            },
             "extensions": [
-                "innoverio.vscode-dbt-power-user@0.51.2",
-                "ms-python.python@2024.22.2",
+                "innoverio.vscode-dbt-power-user",
+                "ms-python.python",
                 "ms-python.debugpy",
-                "samuelcolvin.jinjahtml"
+                "samuelcolvin.jinjahtml",
+                "mtxr.sqltools",
+                "mtxr.sqltools-driver-pg"
             ]
         }
     },
-    "remoteUser": "gitpod",
-    "features": {}
+    
+    "remoteUser": "vscode",
+    "features": {
+        // Enable the docker CLI to interact with other containers (e.g. the postgres db)
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1.6.5": {}
+    }
 }
