@@ -25,10 +25,6 @@
                     "**/macros/**/*.sql": "jinja-sql",
                     "**/tests/**/*.sql": "jinja-sql"
                 },
-                // Configure formatter for the dbt files
-                "[jinja-sql]": {
-                    "editor.defaultFormatter": "innoverio.vscode-dbt-power-user"
-                },
                 "sqltools.connections": [
                     {
                         "previewLimit": 50,
