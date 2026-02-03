@@ -8,8 +8,7 @@
     "forwardPorts": [5052, 5432],
 
     "containerEnv": {
-        "SHELL": "/bin/bash",
-        "DOCKER_API_VERSION": "1.43"
+        "SHELL": "/bin/bash"
     },
 
     "customizations": {
@@ -24,10 +23,6 @@
                     "**/models/**/*.sql": "jinja-sql",
                     "**/macros/**/*.sql": "jinja-sql",
                     "**/tests/**/*.sql": "jinja-sql"
-                },
-                // Configure formatter for the dbt files
-                "[jinja-sql]": {
-                    "editor.defaultFormatter": "innoverio.vscode-dbt-power-user"
                 },
                 "sqltools.connections": [
                     {
@@ -45,7 +40,6 @@
                 "sqltools.completionLanguages": ["sql", "sql-snowflake", "sql-postgres"]
             },
             "extensions": [
-                "innoverio.vscode-dbt-power-user",
                 "ms-python.python",
                 "ms-python.debugpy",
                 "samuelcolvin.jinjahtml",
@@ -55,9 +49,5 @@
         }
     },
     
-    "remoteUser": "vscode",
-    "features": {
-        // Enable the docker CLI to interact with other containers (e.g. the postgres db)
-        "ghcr.io/devcontainers/features/docker-outside-of-docker:1.6.5": {}
-    }
+    "remoteUser": "vscode"
 }
