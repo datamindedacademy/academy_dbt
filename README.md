@@ -3,37 +3,40 @@
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/datamindedacademy/academy_dbt)
 
-This repository is hosting the exercises provided to students in the context of the dbt course of the Dataminded Academy.
+This repository hosts the exercises of the SQL & dbt course of the Dataminded Academy.
 
-To start click on "Open in codespaces" button.
+To start, click the "Open in GitHub Codespaces" button above, then work through
+the exercises in [`exercises/`](exercises/).
 
-### Connecting to Postgres
+## Database backends
 
-You can connect to the Postgres database in one of three ways:
+The course runs on one of two databases (full instructions in
+[`docs/setup_instructions.md`](docs/setup_instructions.md)):
 
-1. **Using SQLTools** (the VSCode extension): Click the extension icon on the left. It has the right credentials.
-2. **Using PGAdmin:** Click on Ports > click on the URL of the forwarded address of port 5052.
-3. **Using dbt:** Run `dbt init`, choose postgres, and enter the following credentials:
-    * hostname: db
-    * port: 5432
-    * database: postgres
-    * username: postgres
-    * password: postgres
+- **Postgres** (default, zero setup): a local database inside the codespace,
+  with the TPC-H sample data preloaded. Query it via the SQLTools extension,
+  via pgAdmin (forwarded port 5052), or via dbt.
+- **Databricks Free Edition** (on-site course): each student creates a free
+  personal workspace. Copy `.env.example` to `.env` and fill in your workspace
+  URL, warehouse HTTP path, and access token.
 
-### Connecting to Snowflake
+Run `./create_profiles.sh` once. It generates `~/.dbt/profiles.yml` with a
+`postgres` target and a `databricks` target in every profile, so the same
+project runs on either backend:
 
-You can also use `dbt init` to set up a connection to the Snowflake data warehouse,
-and modify the `profiles.yml` that is created to include:
-
+```bash
+dbt init my_project --skip-profile-setup --skip-debug
+./create_profiles.sh          # picks up the new project
+cd my_project
+dbt run                       # postgres
+dbt run --target databricks   # the same code on Databricks
 ```
-    authenticator: username_password_mfa
-```
 
-The connection details are not stored in the workspace itself (but in `~/.dbt/profiles.yml` instead)
-so every time the workspace times out, the connection settings are lost. In that case, you can
-run the script `/workspace/create_profiles.sh` to re-generate this file easily.
+Re-run `./create_profiles.sh` any time — after `dbt init`, after a codespace
+rebuild, or to repair the file.
 
-### Resources:
+## Resources
+
 - Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
 - Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
 - Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support

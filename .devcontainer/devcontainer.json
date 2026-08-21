@@ -37,7 +37,7 @@
                     }
                 ],
                 "sqltools.codelensLanguages": ["sql"],
-                "sqltools.completionLanguages": ["sql", "sql-snowflake", "sql-postgres"]
+                "sqltools.completionLanguages": ["sql", "sql-postgres"]
             },
             "extensions": [
                 "ms-python.python",

@@ -11,3 +11,8 @@ logs/
 /audience_measurement/logs/
 /venv/
 *.csv
+
+# Databricks credentials (each student creates their own from .env.example)
+.env
+
+.DS_Store

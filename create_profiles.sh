@@ -1,86 +1,178 @@
-#!/bin/bash  
-  
-# Read the user input     
-echo -n "Enter your first name: "
-read firstname
-user=summerschool2024_$firstname
-schema=dbt_$firstname
+#!/bin/bash
+# Generates ~/.dbt/profiles.yml for the course.
+#
+# Every profile it writes gets TWO targets:
+#   postgres    - the local database in the codespace (default)
+#   databricks  - your Databricks Free Edition workspace (needs .env)
+#
+# It writes a profile for:
+#   - every dbt project it finds in this repository (read from dbt_project.yml)
+#   - any extra name you pass as an argument
+#   - the fallback names dbt_test and covid
+#
+# Re-run it any time. It is safe to run twice, and it repairs the file after
+# `dbt init` has overwritten it.
+#
+# Usage:
+#   ./create_profiles.sh                       # postgres is the default target
+#   ./create_profiles.sh --target databricks   # databricks is the default target
+#   ./create_profiles.sh my_project            # also write a profile 'my_project'
+#
+# Then:
+#   dbt debug                        # tests the default target
+#   dbt debug --target databricks    # tests the databricks target
+#   dbt run --target databricks      # runs the project on Databricks
+set -euo pipefail
 
-# Read the password, do not display it and display stars instead 
-unset $password
-prompt="Enter the Snowflake password: "
-while IFS= read -p "$prompt" -r -s -n 1 char
-do
-  # Enter - accept password
-  if [[ $char == $'\0' ]] ; then
-    printf "\n"
-    break
-  fi
-  # Backspace
-  if [[ $char == $'\177' ]] ; then
-    prompt=$'\b \b'
-    password="${password%?}"
-  else
-    prompt='*'
-    password+="$char"
-  fi
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROFILES_PATH="${HOME}/.dbt/profiles.yml"
+DEFAULT_TARGET="postgres"
+EXTRA_NAMES=()
+
+usage() {
+  sed -n '2,26p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  exit 0
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -t|--target)
+      DEFAULT_TARGET="${2:-}"
+      if [[ "${DEFAULT_TARGET}" != "postgres" && "${DEFAULT_TARGET}" != "databricks" ]]; then
+        echo "Error: --target must be 'postgres' or 'databricks'." >&2
+        exit 1
+      fi
+      shift 2
+      ;;
+    -h|--help) usage ;;
+    -*) echo "Error: unknown option '$1'. Use --help." >&2; exit 1 ;;
+    *) EXTRA_NAMES+=("$1"); shift ;;
+  esac
 done
-# End reading password
 
-echo "Snowflake Username: $user"
-echo "Snowflake password: $password"
-echo "Snowflake schema: $schema"
-read -p "Does this look correct? (y/n) " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]
-then
-  echo "Aborting. Re-run the script to try again."
-  [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1 # exit the script
-else
-  echo "Writing ~/.dbt/profiles.yml. Re-run the script to set it again."
+# ---------------------------------------------------------------------------
+# Load settings from .env (all optional except the Databricks credentials)
+# ---------------------------------------------------------------------------
+DATABRICKS_HOST=""
+DATABRICKS_HTTP_PATH=""
+DATABRICKS_TOKEN=""
+DATABRICKS_CATALOG="workspace"
+DATABRICKS_SCHEMA="dbt"
+POSTGRES_HOST="db"
+POSTGRES_PORT="5432"
+POSTGRES_USER="postgres"
+POSTGRES_PASSWORD="postgres"
+POSTGRES_DBNAME="postgres"
+# Models are written HERE. It must differ from the source schema (tpch),
+# otherwise a model named e.g. "customer" replaces the raw source table.
+POSTGRES_SCHEMA="dbt"
+
+if [[ -f "${SCRIPT_DIR}/.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "${SCRIPT_DIR}/.env"
+  set +a
 fi
 
-mkdir -p /home/gitpod/.dbt/
-echo "audience_measurement:
-  outputs:
-    dev:
-      account: ic07601.eu-west-1
-      database: summerschool2024
-      password: $password
-      authenticator: username_password_mfa
-      role: student
-      schema: $schema
-      threads: 1
-      type: snowflake
-      user: $user
-      warehouse: COMPUTE_WH
-  target: dev
-testproject:
-  outputs:
-    dev:
-      account: ic07601.eu-west-1
-      database: summerschool2024
-      password: $password
-      authenticator: username_password_mfa
-      role: student
-      schema: $schema
-      threads: 1
-      type: snowflake
-      user: $user
-      warehouse: COMPUTE_WH
-  target: dev
-covid:
-  outputs:
-    dev:
-      account: ic07601.eu-west-1
-      database: summerschool2024
-      password: $password
-      authenticator: username_password_mfa
-      role: student
-      schema: $schema
-      threads: 1
-      type: snowflake
-      user: $user
-      warehouse: COMPUTE_WH
-  target: dev" > /home/gitpod/.dbt/profiles.yml
+# Strip a leading https:// from the host, a common copy-paste mistake
+DATABRICKS_HOST="${DATABRICKS_HOST#https://}"
+DATABRICKS_HOST="${DATABRICKS_HOST%/}"
 
+HAS_DATABRICKS="no"
+if [[ -n "${DATABRICKS_HOST}" && -n "${DATABRICKS_HTTP_PATH}" && -n "${DATABRICKS_TOKEN}" ]]; then
+  HAS_DATABRICKS="yes"
+fi
+
+if [[ "${DEFAULT_TARGET}" == "databricks" && "${HAS_DATABRICKS}" == "no" ]]; then
+  echo "Error: --target databricks needs Databricks credentials." >&2
+  echo "Copy .env.example to .env and fill in the three values." >&2
+  exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# Collect the profile names to write
+# ---------------------------------------------------------------------------
+NAMES=("dbt_test" "covid")
+NAMES+=("${EXTRA_NAMES[@]+"${EXTRA_NAMES[@]}"}")
+
+# Discover the profile name of every dbt project in this repository
+while IFS= read -r project_file; do
+  discovered="$(sed -n 's/^profile:[[:space:]]*['"'"'"]\{0,1\}\([^'"'"'"]*\)['"'"'"]\{0,1\}[[:space:]]*$/\1/p' \
+    "${project_file}" | head -1)"
+  [[ -n "${discovered}" ]] && NAMES+=("${discovered}")
+done < <(find "${SCRIPT_DIR}" -name dbt_project.yml -not -path '*/target/*' \
+  -not -path '*/dbt_packages/*' -not -path '*/.git/*' 2>/dev/null)
+
+# Remove duplicates, keep the order
+UNIQUE_NAMES=()
+for name in "${NAMES[@]}"; do
+  seen="no"
+  for kept in "${UNIQUE_NAMES[@]+"${UNIQUE_NAMES[@]}"}"; do
+    [[ "${kept}" == "${name}" ]] && seen="yes" && break
+  done
+  [[ "${seen}" == "no" ]] && UNIQUE_NAMES+=("${name}")
+done
+
+# ---------------------------------------------------------------------------
+# Write the file
+# ---------------------------------------------------------------------------
+emit_profile() {
+  local profile_name="$1"
+  echo "${profile_name}:"
+  echo "  target: ${DEFAULT_TARGET}"
+  echo "  outputs:"
+  cat << EOF
+    postgres:
+      type: postgres
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+      dbname: ${POSTGRES_DBNAME}
+      schema: ${POSTGRES_SCHEMA}
+      threads: 4
+EOF
+  if [[ "${HAS_DATABRICKS}" == "yes" ]]; then
+    cat << EOF
+    databricks:
+      type: databricks
+      host: ${DATABRICKS_HOST}
+      http_path: ${DATABRICKS_HTTP_PATH}
+      token: ${DATABRICKS_TOKEN}
+      catalog: ${DATABRICKS_CATALOG}
+      schema: ${DATABRICKS_SCHEMA}
+      threads: 4
+EOF
+  fi
+}
+
+mkdir -p "$(dirname "${PROFILES_PATH}")"
+{
+  echo "# Generated by create_profiles.sh. Re-run that script to regenerate."
+  echo "# Do not edit by hand: dbt init may overwrite this file."
+  for name in "${UNIQUE_NAMES[@]}"; do
+    emit_profile "${name}"
+  done
+} > "${PROFILES_PATH}"
+
+chmod 600 "${PROFILES_PATH}"
+
+# ---------------------------------------------------------------------------
+# Report
+# ---------------------------------------------------------------------------
+echo "Wrote ${PROFILES_PATH}"
+echo "Profiles: ${UNIQUE_NAMES[*]}"
+echo "Default target: ${DEFAULT_TARGET}"
+echo "Targets in each profile:"
+echo "  postgres    ${POSTGRES_USER}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DBNAME}, models -> schema ${POSTGRES_SCHEMA}"
+if [[ "${HAS_DATABRICKS}" == "yes" ]]; then
+  echo "  databricks  ${DATABRICKS_HOST}, catalog ${DATABRICKS_CATALOG}, schema ${DATABRICKS_SCHEMA}"
+else
+  echo "  databricks  (not written: no .env file with credentials)"
+  echo "              Copy .env.example to .env, fill it in, then re-run this script."
+fi
+echo
+echo "To create a new dbt project without losing these targets, run:"
+echo "  dbt init <project_name> --skip-profile-setup --skip-debug"
+echo "  ./create_profiles.sh          # picks up the new project"
+echo "  dbt debug                     # inside the project folder"
