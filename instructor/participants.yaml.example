@@ -1,0 +1,11 @@
+# Course participants, one per line. Copy this file to participants.yaml.
+#
+# Names are turned into Snowflake identifiers by upper-casing them and replacing
+# anything that is not a letter or digit with an underscore, so "grace.hopper"
+# becomes the user ACADEMY_DBT_GRACE_HOPPER and the schema GRACE_HOPPER.
+#
+# Removing a name and re-applying drops that participant's user, role and schema,
+# along with everything in it.
+- grace.hopper
+- ada.lovelace
+- alan.turing

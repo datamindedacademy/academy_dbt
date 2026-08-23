@@ -1,0 +1,20 @@
+# Copy to terraform.tfvars and fill in. This file is gitignored.
+#
+# SELECT CURRENT_ORGANIZATION_NAME(), CURRENT_ACCOUNT_NAME();
+organization_name = "MYORG"
+account_name      = "SUMMERSCHOOL"
+
+# The service user created by scripts/bootstrap_account.sh.
+admin_user = "TERRAFORM"
+admin_role = "ACCOUNTADMIN"
+
+
+
+participant_email_domain = "academy.example.com"
+
+aws_region  = "eu-west-1"
+aws_profile = "default"
+
+# prefix            = "ACADEMY_DBT"
+# warehouse_size    = "XSMALL"
+# grant_sample_data = true
