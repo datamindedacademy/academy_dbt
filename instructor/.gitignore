@@ -1,0 +1,16 @@
+# State holds participant passwords and private keys in cleartext.
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.tfstate.lock.info
+
+# Your account identifiers and admin user.
+*.tfvars
+!*.tfvars.example
+
+# The actual class list, and the rendered credential handout.
+participants.yaml
+out/
+
+# playwright-cli scratch
+.playwright-cli/

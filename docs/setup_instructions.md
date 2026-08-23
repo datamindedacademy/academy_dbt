@@ -1,15 +1,16 @@
 # Setup instructions
 
-This repository supports 2 databases to run SQL / dbt on:
+This repository supports 3 databases to run SQL / dbt on:
 
 - **Postgres:** No setup required. Everything is self-hosted inside the codespace.
   Use this for the self-service track.
 - **Databricks Free Edition:** Each student creates a free personal workspace.
   Use this for the on-site course.
+- **Snowflake:** Any Snowflake account — a trial, your employer's, or a
+  classroom your instructor set up and handed you credentials for.
 
-You can use both from the same dbt project: `create_profiles.sh` writes one
-profile with a `postgres` target and a `databricks` target. Switch with
-`--target`.
+You can use all three from the same dbt project: `create_profiles.sh` writes one
+profile with a target per backend you have configured. Switch with `--target`.
 
 Start the codespace first:
 
@@ -40,7 +41,7 @@ any number of times.
 ### Creating a dbt project
 
 `dbt init` asks for connection details and **overwrites** the profile of the
-same name, which throws away the second target. Skip its questions instead:
+same name, which throws away the other targets. Skip its questions instead:
 
 ```bash
 dbt init my_project --skip-profile-setup --skip-debug
@@ -52,6 +53,22 @@ dbt debug --target databricks
 
 If you already overwrote a profile by accident, just run
 `./create_profiles.sh` again. It repairs the file.
+
+## One source declaration for every backend
+
+The source data sits in a different place per backend (`samples` on Databricks,
+`snowflake_sample_data` on Snowflake, `postgres` on Postgres). Let dbt pick the
+right one, so the same project runs on all three:
+
+```yaml
+sources:
+  - name: tpch
+    database: "{{ {'databricks': 'samples', 'snowflake': 'snowflake_sample_data'}.get(target.type, 'postgres') }}"
+    schema: "{{ 'tpch_sf1' if target.type == 'snowflake' else 'tpch' }}"
+    tables:
+      - name: customer
+      - name: orders
+```
 
 ## Postgres (default, zero setup)
 
@@ -114,22 +131,6 @@ Each student works in their own free workspace. One-time setup:
 - Your models land in catalog `workspace`, schema `dbt`.
 - You can also query interactively in the workspace's **SQL editor**.
 
-### One source declaration for both backends
-
-The source data sits in a different place per backend (`samples` on Databricks,
-`postgres` on Postgres). Let dbt pick the right one, so the same project runs
-on both:
-
-```yaml
-sources:
-  - name: tpch
-    database: "{{ 'samples' if target.type == 'databricks' else 'postgres' }}"
-    schema: tpch
-    tables:
-      - name: customer
-      - name: orders
-```
-
 ### Notes and limits
 
 - A rebuilt codespace loses `~/.dbt/profiles.yml`. Re-run
@@ -138,3 +139,79 @@ sources:
   warehouse, max 5 concurrent job tasks. Fine for this course.
 - Databricks may delete inactive accounts. Revoke tokens you no longer use
   (**Settings > Developer > Access tokens**).
+
+## Snowflake
+
+Two ways to get here, and they differ only in where the credentials come from.
+
+**Your own account.** Anything with a Snowflake account works — a trial, your
+employer's, whatever. Fill in `.env` yourself and pick an authentication method
+below.
+
+**A classroom your instructor set up.** You receive a ready-made `.env` with your
+own user, role and schema. Nothing to sign up for, nothing to fill in.
+
+### Authentication
+
+`create_profiles.sh` picks the method from whichever variable is set in `.env`:
+
+| `.env` variable | Method | Notes |
+| --- | --- | --- |
+| `SNOWFLAKE_PASSWORD` | Access token or password | A [programmatic access token](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) goes here — it replaces the password. This is what a classroom handout contains. |
+| `SNOWFLAKE_PRIVATE_KEY_PATH` | Key pair | The alternative on your own account. Exempt from MFA, no browser. |
+
+Both also work with the **Snowflake VS Code extension**: `create_profiles.sh`
+writes `~/.snowflake/connections.toml` alongside your dbt profile, so you can run
+SQL in the editor as well as through dbt.
+
+dbt also supports `authenticator: externalbrowser`, but **not in a codespace**: it
+waits for a redirect to `localhost`, which in a codespace is the container rather
+than your laptop. Use a key pair instead.
+
+To set up a key pair on your own account, see [Snowflake's key-pair
+guide](https://docs.snowflake.com/en/user-guide/key-pair-auth), then point
+`SNOWFLAKE_PRIVATE_KEY_PATH` at the private key file.
+
+### 1. Install the file
+
+Put your `.env` in the root of this repository — the one your instructor gave
+you, or one you filled in yourself from `.env.example`. Then:
+
+```bash
+./create_profiles.sh
+```
+
+You should see a `snowflake` line in the summary it prints.
+
+### 2. Check it works
+
+```bash
+dbt debug --target snowflake
+```
+
+Nothing expires during a course, so there is no daily step.
+
+### Using Snowflake in the exercises
+
+```bash
+dbt run --target snowflake
+```
+
+Your models are written to your own schema in the shared course database. You
+can read the TPC-H source tables at `SNOWFLAKE_SAMPLE_DATA.TPCH_SF1`, and you
+cannot write to another participant's schema.
+
+### The web UI (classroom setup only)
+
+Your instructor's setup also gives you Snowsight, the Snowflake web UI, at the
+account URL in your `.env`. Sign in with the **"Academy login"** button rather
+than the username and password fields — your Snowflake user has no password of
+its own, and the fields will refuse you. The button takes you to a login page
+where the username and password from your handout work.
+
+### Notes and limits
+
+- The warehouse is shared with the rest of the class and suspends after a minute
+  of inactivity. A first query after a pause takes a few seconds to wake it.
+- A rebuilt codespace loses `~/.dbt/profiles.yml` and `~/.snowflake/connections.toml`.
+  Re-run `./create_profiles.sh`.

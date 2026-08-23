@@ -1,0 +1,25 @@
+# Copy to terraform.tfvars and fill in. Gitignored.
+#
+# SELECT CURRENT_ORGANIZATION_NAME(), CURRENT_ACCOUNT_NAME();
+organization_name = "MYORG"
+account_name      = "SUMMERSCHOOL"
+
+# The user Terraform authenticates as; needs ACCOUNTADMIN.
+snowflake_user = "MY_ADMIN_USER"
+
+# Optional: a profile in ~/.snowflake/config instead of environment variables.
+# snowflake_profile = "summerschool"
+
+participant_email_domain = "academy.example.com"
+
+aws_region  = "eu-west-1"
+aws_profile = "default"
+
+# After the first apply, run
+#   DESC SECURITY INTEGRATION <PREFIX>_COGNITO_SNOWSIGHT;
+# and add any OIDC_REDIRECT_URIS not already registered:
+# extra_oidc_callback_urls = []
+
+# prefix                = "ACADEMY_DBT"
+# warehouse_size        = "XSMALL"
+# snowsight_login_label = "Academy login"

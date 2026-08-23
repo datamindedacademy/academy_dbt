@@ -10,7 +10,7 @@ the exercises in [`exercises/`](exercises/).
 
 ## Database backends
 
-The course runs on one of two databases (full instructions in
+The course runs on one of three databases (full instructions in
 [`docs/setup_instructions.md`](docs/setup_instructions.md)):
 
 - **Postgres** (default, zero setup): a local database inside the codespace,
@@ -19,10 +19,12 @@ The course runs on one of two databases (full instructions in
 - **Databricks Free Edition** (on-site course): each student creates a free
   personal workspace. Copy `.env.example` to `.env` and fill in your workspace
   URL, warehouse HTTP path, and access token.
+- **Snowflake**: works with any Snowflake account — a trial, your employer's, or
+  a classroom your instructor set up. Fill in the `SNOWFLAKE_*` values in `.env`
+  and use an access token or a key pair.
 
 Run `./create_profiles.sh` once. It generates `~/.dbt/profiles.yml` with a
-`postgres` target and a `databricks` target in every profile, so the same
-project runs on either backend:
+target per backend you have configured, so the same project runs on any of them:
 
 ```bash
 dbt init my_project --skip-profile-setup --skip-debug
@@ -30,6 +32,7 @@ dbt init my_project --skip-profile-setup --skip-debug
 cd my_project
 dbt run                       # postgres
 dbt run --target databricks   # the same code on Databricks
+dbt run --target snowflake    # or on Snowflake
 ```
 
 Re-run `./create_profiles.sh` any time — after `dbt init`, after a codespace
