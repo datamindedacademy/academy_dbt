@@ -44,7 +44,11 @@
                 "ms-python.debugpy",
                 "samuelcolvin.jinjahtml",
                 "mtxr.sqltools",
-                "mtxr.sqltools-driver-pg"
+                "mtxr.sqltools-driver-pg",
+                // SQL client for the Snowflake backend; SQLTools only has a
+                // Postgres driver here. Reads ~/.snowflake/connections.toml,
+                // which create_profiles.sh writes.
+                "snowflake.snowflake-vsc"
             ]
         }
     },

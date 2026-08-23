@@ -29,11 +29,13 @@ sources:
       - name: orders
 ```
 
-On Databricks the source data sits in the catalog `samples` instead of the
-database `postgres`. To make one project run on both backends, let dbt choose:
+The same TPC-H tables live in a different place on each backend: the catalog
+`samples` on Databricks, and `snowflake_sample_data.tpch_sf1` on Snowflake. To
+make one project run on all three, let dbt choose:
 
 ```yaml
-    database: "{{ 'samples' if target.type == 'databricks' else 'postgres' }}"
+    database: "{{ {'databricks': 'samples', 'snowflake': 'snowflake_sample_data'}.get(target.type, 'postgres') }}"
+    schema: "{{ 'tpch_sf1' if target.type == 'snowflake' else 'tpch' }}"
 ```
 
 **Referring to data.** In a model, never hard-code table names:
