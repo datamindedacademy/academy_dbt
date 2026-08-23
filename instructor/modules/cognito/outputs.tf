@@ -16,11 +16,6 @@ output "client_secret" {
   value       = aws_cognito_user_pool_client.snowsight.client_secret
 }
 
-output "hosted_ui_url" {
-  description = "Cognito hosted UI. Participants land here when Snowsight redirects them."
-  value       = "https://${aws_cognito_user_pool_domain.hosted_ui.domain}.auth.${data.aws_region.current.name}.amazoncognito.com"
-}
-
 output "participant_passwords" {
   description = "Snowsight sign-in password per participant."
   sensitive   = true

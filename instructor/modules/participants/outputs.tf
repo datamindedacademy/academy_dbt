@@ -15,19 +15,6 @@ output "credentials" {
   }
 }
 
-output "participant_roles" {
-  description = "Snowflake account role per participant."
-  value       = { for name, m in module.participant : name => m.role }
-}
-
-output "database_name" {
-  value = snowflake_database.class.name
-}
-
-output "warehouse_name" {
-  value = snowflake_warehouse.class.name
-}
-
 output "participant_emails" {
   description = "Course-scoped address per participant, derived once in the participant module. The cognito module consumes this rather than deriving it again."
   value       = { for name, m in module.participant : name => m.email }

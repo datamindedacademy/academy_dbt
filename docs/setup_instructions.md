@@ -1,15 +1,16 @@
 # Setup instructions
 
-This repository supports 2 databases to run SQL / dbt on:
+This repository supports 3 databases to run SQL / dbt on:
 
 - **Postgres:** No setup required. Everything is self-hosted inside the codespace.
   Use this for the self-service track.
 - **Databricks Free Edition:** Each student creates a free personal workspace.
   Use this for the on-site course.
+- **Snowflake:** Any Snowflake account — a trial, your employer's, or a
+  classroom your instructor set up and handed you credentials for.
 
-You can use both from the same dbt project: `create_profiles.sh` writes one
-profile with a `postgres` target and a `databricks` target. Switch with
-`--target`.
+You can use all three from the same dbt project: `create_profiles.sh` writes one
+profile with a target per backend you have configured. Switch with `--target`.
 
 Start the codespace first:
 
@@ -40,7 +41,7 @@ any number of times.
 ### Creating a dbt project
 
 `dbt init` asks for connection details and **overwrites** the profile of the
-same name, which throws away the second target. Skip its questions instead:
+same name, which throws away the other targets. Skip its questions instead:
 
 ```bash
 dbt init my_project --skip-profile-setup --skip-debug
@@ -52,6 +53,22 @@ dbt debug --target databricks
 
 If you already overwrote a profile by accident, just run
 `./create_profiles.sh` again. It repairs the file.
+
+## One source declaration for every backend
+
+The source data sits in a different place per backend (`samples` on Databricks,
+`snowflake_sample_data` on Snowflake, `postgres` on Postgres). Let dbt pick the
+right one, so the same project runs on all three:
+
+```yaml
+sources:
+  - name: tpch
+    database: "{{ {'databricks': 'samples', 'snowflake': 'snowflake_sample_data'}.get(target.type, 'postgres') }}"
+    schema: "{{ 'tpch_sf1' if target.type == 'snowflake' else 'tpch' }}"
+    tables:
+      - name: customer
+      - name: orders
+```
 
 ## Postgres (default, zero setup)
 
@@ -113,22 +130,6 @@ Each student works in their own free workspace. One-time setup:
 - The TPC-H source data is built in: catalog `samples`, schema `tpch`.
 - Your models land in catalog `workspace`, schema `dbt`.
 - You can also query interactively in the workspace's **SQL editor**.
-
-### One source declaration for both backends
-
-The source data sits in a different place per backend (`samples` on Databricks,
-`postgres` on Postgres). Let dbt pick the right one, so the same project runs
-on both:
-
-```yaml
-sources:
-  - name: tpch
-    database: "{{ {'databricks': 'samples', 'snowflake': 'snowflake_sample_data'}.get(target.type, 'postgres') }}"
-    schema: "{{ 'tpch_sf1' if target.type == 'snowflake' else 'tpch' }}"
-    tables:
-      - name: customer
-      - name: orders
-```
 
 ### Notes and limits
 

@@ -55,9 +55,9 @@ resource "snowflake_grant_privileges_to_account_role" "sample_data" {
     precondition {
       condition     = length(data.snowflake_databases.sample_data.databases) > 0
       error_message = <<-EOT
-        The SNOWFLAKE_SAMPLE_DATA database does not exist in this account, but
-        grant_sample_data is true. The course reads its TPC-H source tables from
-        it. Create it once, as ACCOUNTADMIN:
+        The SNOWFLAKE_SAMPLE_DATA database does not exist in this account. The
+        course reads its TPC-H source tables from it. Create it once, as
+        ACCOUNTADMIN:
 
           CREATE DATABASE snowflake_sample_data FROM SHARE sfc_samples.sample_data;
 
