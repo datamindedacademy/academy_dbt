@@ -29,8 +29,8 @@ as the other backends, nothing to load, no storage cost.
 Prerequisites: [OpenTofu](https://opentofu.org/) ≥ 1.6, `jq`, AWS credentials and
 a Snowflake account.
 
-No account yet? Create one as ORGADMIN with `CREATE ACCOUNT`, then give
-Terraform a service user to authenticate as:
+No account yet? Create one as ORGADMIN with `CREATE ACCOUNT` — the region is
+permanent — then give Terraform a service user:
 
 ```sql
 CREATE USER terraform TYPE = SERVICE RSA_PUBLIC_KEY = '<public key body>';
@@ -38,15 +38,27 @@ GRANT ROLE ACCOUNTADMIN TO USER terraform;
 ```
 
 Generate the key with `openssl genpkey -algorithm RSA -pkeyopt
-rsa_keygen_bits:4096 -out key.p8` and strip the PEM header and footer from the
-public half. Account region is permanent.
+rsa_keygen_bits:4096 -out key.p8`; the public half goes in above without its PEM
+header and footer.
+
+Terraform reads its credentials from a Snowflake CLI profile, so no secrets end
+up in this repo or your shell. In `~/.snowflake/config`, `chmod 0600`:
+
+```toml
+[summerschool]
+organization_name = 'MYORG'
+account_name      = 'SUMMERSCHOOL'
+user              = 'TERRAFORM'
+role              = 'ACCOUNTADMIN'
+authenticator     = 'SNOWFLAKE_JWT'
+private_key       = """<contents of key.p8>"""
+```
+
+Then:
 
 ```sh
-cp terraform.tfvars.example terraform.tfvars   # org, account, admin user
+cp terraform.tfvars.example terraform.tfvars   # org, account, profile name
 cp participants.yaml.example participants.yaml # the class list
-
-export SNOWFLAKE_AUTHENTICATOR=SNOWFLAKE_JWT
-export SNOWFLAKE_PRIVATE_KEY="$(cat ~/.snowflake/<account>_tf.p8)"
 
 tofu init && tofu apply
 ./scripts/render_credentials.sh
