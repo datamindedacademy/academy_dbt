@@ -29,20 +29,43 @@ as the other backends, nothing to load, no storage cost.
 Prerequisites: [OpenTofu](https://opentofu.org/) ≥ 1.6, `jq`, AWS credentials and
 a Snowflake account.
 
-No account yet? Create one as ORGADMIN with `CREATE ACCOUNT` — the region is
-permanent — then give Terraform a service user:
+### Authenticating
 
-```sql
-CREATE USER terraform TYPE = SERVICE RSA_PUBLIC_KEY = '<public key body>';
-GRANT ROLE ACCOUNTADMIN TO USER terraform;
+You need ACCOUNTADMIN. Pick whichever fits; all three set the same provider.
+
+**Password + MFA — nothing to set up.** If you are already an account admin with
+a password, this needs no key and no new Snowflake objects:
+
+```sh
+export SNOWFLAKE_AUTHENTICATOR=USERNAMEPASSWORDMFA
+export SNOWFLAKE_PASSWORD='...'
 ```
 
-Generate the key with `openssl genpkey -algorithm RSA -pkeyopt
-rsa_keygen_bits:4096 -out key.p8`; the public half goes in above without its PEM
-header and footer.
+You approve one MFA push per session; the connector caches the token on macOS
+and Windows.
 
-Terraform reads its credentials from a Snowflake CLI profile, so no secrets end
-up in this repo or your shell. In `~/.snowflake/config`, `chmod 0600`:
+**Key pair — no prompts, good for repeated applies.** Register a key on your own
+user:
+
+```sh
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out ~/.snowflake/tf.p8
+openssl rsa -pubout -in ~/.snowflake/tf.p8 | grep -v -- ----- | tr -d '
+'
+```
+
+```sql
+ALTER USER <you> SET RSA_PUBLIC_KEY = '<that output>';
+```
+
+```sh
+export SNOWFLAKE_AUTHENTICATOR=SNOWFLAKE_JWT
+export SNOWFLAKE_PRIVATE_KEY="$(cat ~/.snowflake/tf.p8)"
+```
+
+**Profile — no environment variables.** Set `snowflake_profile` in
+`terraform.tfvars` and put the same values in `~/.snowflake/config`, `chmod
+0600`. Note this is the provider's own file: it is not `connections.toml`, and
+`private_key` must be the PEM inline, not a path.
 
 ```toml
 [summerschool]
@@ -51,10 +74,11 @@ account_name      = 'SUMMERSCHOOL'
 user              = 'TERRAFORM'
 role              = 'ACCOUNTADMIN'
 authenticator     = 'SNOWFLAKE_JWT'
-private_key       = """<contents of key.p8>"""
+private_key       = """<contents of tf.p8>"""
 ```
 
-Then:
+No Snowflake account yet? Create one as ORGADMIN with `CREATE ACCOUNT`; the
+region is permanent.
 
 ```sh
 cp terraform.tfvars.example terraform.tfvars   # org, account, profile name

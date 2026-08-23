@@ -8,10 +8,21 @@ variable "account_name" {
   description = "Snowflake account name. SELECT CURRENT_ACCOUNT_NAME();"
 }
 
+variable "snowflake_user" {
+  type        = string
+  description = "Snowflake user Terraform authenticates as. Needs ACCOUNTADMIN."
+}
+
+variable "snowflake_role" {
+  type        = string
+  default     = "ACCOUNTADMIN"
+  description = "Role Terraform assumes."
+}
+
 variable "snowflake_profile" {
   type        = string
-  default     = "default"
-  description = "Profile in ~/.snowflake/config that Terraform authenticates with."
+  default     = null
+  description = "Optional profile in ~/.snowflake/config. Leave unset to authenticate from the environment instead."
 }
 
 variable "prefix" {

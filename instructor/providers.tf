@@ -1,20 +1,12 @@
-# Credentials come from a Snowflake CLI profile in ~/.snowflake/config (0600),
-# so nothing secret lives in this repo or the environment:
-#
-#   [summerschool]
-#   organization_name = 'DATAMINDED'
-#   account_name      = 'SUMMERSCHOOL'
-#   user              = 'TERRAFORM'
-#   role              = 'ACCOUNTADMIN'
-#   authenticator     = 'SNOWFLAKE_JWT'
-#   private_key       = '''<PEM>'''
-#
-# The account is also named explicitly because it builds the OIDC callback URLs.
-# Explicit values win over the profile, so the two cannot disagree.
+# Terraform needs an ACCOUNTADMIN. Credentials come from the environment or from
+# a profile; nothing secret lives in this repo. See the README for the three
+# ways to supply them.
 provider "snowflake" {
-  profile           = var.snowflake_profile
   organization_name = var.organization_name
   account_name      = var.account_name
+  user              = var.snowflake_user
+  role              = var.snowflake_role
+  profile           = var.snowflake_profile
 }
 
 provider "aws" {
