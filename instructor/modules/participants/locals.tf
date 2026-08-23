@@ -10,14 +10,12 @@ locals {
   warehouse_name = "${var.prefix}_WH"
   shared_role    = "${var.prefix}_STUDENT"
 
-  participant_emails = {
-    for name, id in local.participants : name => "${name}@${var.participant_email_domain}"
-  }
-
-  # Snowsight shows this instead of the object name: "Grace Hopper" rather than
-  # ACADEMY_DBT_GRACE_HOPPER.
-  participant_display_names = {
-    for name, id in local.participants :
-    name => title(replace(replace(name, ".", " "), "_", " "))
+  # One object instead of five inputs on every module instance.
+  shared = {
+    prefix         = var.prefix
+    database       = snowflake_database.class.name
+    warehouse      = snowflake_warehouse.class.name
+    student_role   = snowflake_account_role.shared.name
+    network_policy = snowflake_network_policy.participants.name
   }
 }

@@ -24,5 +24,5 @@ output "hosted_ui_url" {
 output "participant_passwords" {
   description = "Snowsight sign-in password per participant."
   sensitive   = true
-  value       = { for name, p in local.participants : name => random_password.participant[name].result }
+  value       = { for name, _ in var.participants : name => random_password.participant[name].result }
 }

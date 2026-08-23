@@ -1,20 +1,10 @@
 #!/usr/bin/env bash
-# Turns the Terraform outputs into one folder per participant under out/.
+# Writes one folder per participant under out/: a .env for their codespace and a
+# README.txt telling them what to do with it.
 #
-# Each participant gets three things:
-#   a username        the same one for Snowsight and for dbt
-#   a password        signs in to the Snowsight web UI, via Cognito
-#   an access token   goes in .env for dbt and the VS Code extension
+#   ./scripts/render_credentials.sh [-o DIR]
 #
-# Each folder contains:
-#   .env         drop this into the repository root of a codespace
-#   README.txt   what the participant does with it
-#
-# Usage:
-#   ./scripts/render_credentials.sh              # writes to instructor/out/
-#   ./scripts/render_credentials.sh -o /tmp/hand # writes somewhere else
-#
-# Requires jq. out/ is gitignored; delete it once the credentials are handed out.
+# Needs jq. out/ is gitignored; delete it once handed out.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,7 +14,7 @@ OUT_DIR="${ROOT_DIR}/out"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -o|--out) OUT_DIR="${2:?-o needs a directory}"; shift 2 ;;
-    -h|--help) sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,7p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Error: unknown argument '$1'. Use --help." >&2; exit 1 ;;
   esac
 done
@@ -78,8 +68,8 @@ while IFS= read -r participant; do
     echo "SNOWFLAKE_WAREHOUSE=${warehouse}"
     echo "SNOWFLAKE_DATABASE=${database}"
     echo "SNOWFLAKE_SCHEMA=${schema}"
-    echo "# Programmatic access token. Goes where a password would."
-    # Single-quoted: this file gets `source`d by create_profiles.sh.
+    echo "# Access token; goes where a password would."
+    # Single-quoted: create_profiles.sh sources this file.
     echo "SNOWFLAKE_PASSWORD='${token//\'/\'\\\'\'}'"
   } > "${dir}/.env"
   chmod 600 "${dir}/.env"

@@ -1,12 +1,7 @@
-# Snowflake's OIDC integration refuses to be created without OIDC_CLIENT_SECRET,
-# so this client is confidential.
-
-# Cognito only publishes an authorization endpoint once the pool has a domain,
-# and Snowflake discovers that endpoint from the issuer's
-# .well-known/openid-configuration. Without this, discovery yields no authorize
-# URL and the browser flow cannot start.
+# Without a domain, Cognito publishes no authorization endpoint and the browser
+# flow has nothing to redirect to.
 resource "aws_cognito_user_pool_domain" "hosted_ui" {
-  # Must be unique across all of AWS in the region, hence the pool id.
+  # Must be unique across AWS in the region, hence the pool id.
   domain       = "${var.prefix}-${lower(replace(aws_cognito_user_pool.participants.id, "_", "-"))}"
   user_pool_id = aws_cognito_user_pool.participants.id
 }

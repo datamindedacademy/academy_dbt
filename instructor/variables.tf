@@ -1,22 +1,22 @@
 variable "organization_name" {
   type        = string
-  description = "Your Snowflake organization name. SELECT CURRENT_ORGANIZATION_NAME();"
+  description = "Snowflake organization name. SELECT CURRENT_ORGANIZATION_NAME();"
 }
 
 variable "account_name" {
   type        = string
-  description = "Your Snowflake account name. SELECT CURRENT_ACCOUNT_NAME();"
+  description = "Snowflake account name. SELECT CURRENT_ACCOUNT_NAME();"
 }
 
 variable "admin_user" {
   type        = string
-  description = "The user Terraform authenticates as. Needs a role that can create users, roles, databases and warehouses (ACCOUNTADMIN, or USERADMIN + SYSADMIN)."
+  description = "User Terraform authenticates as; needs ACCOUNTADMIN."
 }
 
 variable "admin_role" {
   type        = string
   default     = "ACCOUNTADMIN"
-  description = "Role Terraform assumes. ACCOUNTADMIN is the simplest; narrow it if your account policy requires."
+  description = "Role Terraform assumes."
 }
 
 variable "prefix" {
@@ -34,13 +34,13 @@ variable "participant_email_domain" {
 variable "access_token_validity_hours" {
   type        = number
   default     = 12
-  description = "Lifetime of the Cognito access token participants give to dbt."
+  description = "Snowsight session lifetime."
 }
 
 variable "aws_region" {
   type        = string
   default     = "eu-west-1"
-  description = "AWS region for the Cognito user pool."
+  description = "Region for the Cognito user pool."
 }
 
 variable "aws_profile" {
@@ -53,24 +53,20 @@ variable "aws_profile" {
 variable "warehouse_size" {
   type        = string
   default     = "XSMALL"
-  description = "Size of the shared warehouse."
+  description = "Size of the shared warehouse. XSMALL handles 15 participants on TPC-H SF1."
 }
 
 
 variable "snowsight_login_label" {
   type        = string
   default     = "Academy login"
-  description = "Text on the sign-in button on the Snowflake login page. Keep it short; the integration name is used when this is unset, and those are long."
+  description = "Text on the sign-in button. Unset, Snowflake shows the integration name."
 
-  validation {
-    condition     = length(var.snowsight_login_label) <= 30
-    error_message = "snowsight_login_label should be at most 30 characters so it fits the button."
-  }
 }
 
 variable "extra_oidc_callback_urls" {
   type        = list(string)
   default     = []
-  description = "Additional OAuth callback URLs to register on the Cognito client, e.g. the account-locator hostname. The org-account form is always included."
+  description = "Extra callback URLs to register. Snowflake answers on several hostnames and picks among them; find the list with DESC SECURITY INTEGRATION."
 }
 

@@ -1,28 +1,23 @@
 output "credentials" {
-  description = "Connection settings and access token per participant, keyed by the name in participants.yaml. Rendered into a handout by scripts/render_credentials.sh."
+  description = "Connection settings and access token per participant, keyed by the name in participants.yaml."
   sensitive   = true
 
   value = {
-    for name, id in local.participants : name => {
-      account = var.account_identifier
-      # The LOGIN_NAME, not the object name: programmatic access tokens
-      # authenticate against LOGIN_NAME, and it is also the Cognito username, so
-      # participants have one username for both dbt and Snowsight.
-      user      = snowflake_user.participant[name].login_name
-      role      = snowflake_account_role.participant[name].name
+    for name, m in module.participant : name => {
+      account   = var.account_identifier
+      user      = m.login_name
+      role      = m.role
       warehouse = snowflake_warehouse.class.name
       database  = snowflake_database.class.name
-      schema    = snowflake_schema.participant[name].name
-
-      # What participants put in their IDE and in dbt, in place of a password.
-      token = snowflake_user_programmatic_access_token.participant[name].token
+      schema    = m.schema
+      token     = m.token
     }
   }
 }
 
 output "participant_roles" {
-  description = "Snowflake account role per participant. Feeds the cognito module, which stamps it into each user's custom:snowflake_role so the Lambda can emit the matching session:role scope."
-  value       = { for name, id in local.participants : name => snowflake_account_role.participant[name].name }
+  description = "Snowflake account role per participant."
+  value       = { for name, m in module.participant : name => m.role }
 }
 
 output "database_name" {
@@ -31,4 +26,9 @@ output "database_name" {
 
 output "warehouse_name" {
   value = snowflake_warehouse.class.name
+}
+
+output "participant_emails" {
+  description = "Course-scoped address per participant, derived once in the participant module. The cognito module consumes this rather than deriving it again."
+  value       = { for name, m in module.participant : name => m.email }
 }

@@ -6,13 +6,5 @@ terraform {
       source  = "snowflakedb/snowflake"
       version = "~> 2.19"
     }
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-    archive = {
-      source  = "hashicorp/archive"
-      version = "~> 2.4"
-    }
   }
 }

@@ -1,16 +1,4 @@
-locals {
-  participants = {
-    for name in var.participants : name => {
-      username = name
-      email    = "${name}@${var.email_domain}"
-    }
-  }
-}
-
-# Identities for Snowsight sign-in only. dbt and IDEs authenticate to Snowflake
-# with a programmatic access token instead, so nothing here needs to shape an
-# access token -- Snowflake's OIDC flow reads the ID token, which already
-# carries the aud and email claims it matches on.
+# Snowsight sign-in only; dbt uses a programmatic access token.
 resource "aws_cognito_user_pool" "participants" {
   name = "${var.prefix}-participants"
 
@@ -30,30 +18,29 @@ resource "aws_cognito_user_pool" "participants" {
 }
 
 resource "random_password" "participant" {
-  for_each = local.participants
+  for_each = var.participants
 
   length      = 16
   min_upper   = 2
   min_lower   = 2
   min_numeric = 2
-  special     = false # keep handouts easy to type; length carries the entropy
+  special     = false # easy to type; length carries the entropy
 }
 
 resource "aws_cognito_user" "participant" {
-  for_each = local.participants
+  for_each = var.participants
 
   user_pool_id = aws_cognito_user_pool.participants.id
-  username     = each.value.username
+  username     = each.key
 
-  # Permanent, not temporary: a forced password change on first use would derail
-  # the start of a one-day course.
+  # Permanent: a forced change on first use would derail the start of the day.
   password = random_password.participant[each.key].result
 
-  # No welcome email. These addresses are routing identifiers, not mailboxes.
+  # These addresses route logins; they are not mailboxes.
   message_action = "SUPPRESS"
 
   attributes = {
-    email          = each.value.email
+    email          = each.value
     email_verified = true
   }
 }
