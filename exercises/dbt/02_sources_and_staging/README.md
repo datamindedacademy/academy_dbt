@@ -29,11 +29,16 @@ sources:
       - name: orders
 ```
 
-On Databricks the source data sits in the catalog `samples` instead of the
-database `postgres`. To make one project run on both backends, let dbt choose:
+The source data sits elsewhere on each backend. To make one project run on all
+of them, let dbt choose:
 
 ```yaml
-    database: "{{ 'samples' if target.type == 'databricks' else 'postgres' }}"
+    database: >-
+      {%- if target.type == 'databricks' -%}samples
+      {%- elif target.type == 'snowflake' -%}SNOWFLAKE_SAMPLE_DATA
+      {%- else -%}postgres
+      {%- endif -%}
+    schema: "{{ 'TPCH_SF1' if target.type == 'snowflake' else 'tpch' }}"
 ```
 
 **Referring to data.** In a model, never hard-code table names:

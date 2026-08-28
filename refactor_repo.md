@@ -37,10 +37,16 @@ The deck itself is untouched.
   (exercises 1, 3, 4, 6, 10, 11).
 - All 28 statements ran against Databricks `samples.tpch`. All passed.
 
-### Two database backends
+### Three database backends
 
-`create_profiles.sh` writes `~/.dbt/profiles.yml`. Every profile gets a
-`postgres` target and a `databricks` target. Switch with `--target databricks`.
+`create_profiles.sh` writes `~/.dbt/profiles.yml` in your HOME directory, so
+dbt, `dbt init` and the VS Code extensions all find it. Every profile gets a
+`postgres` target, plus a `databricks` and a `snowflake` target when `.env`
+holds their credentials. Switch with `--target`.
+
+It also writes an `[academy]` profile to `~/.databrickscfg`, which is the file
+the Databricks VS Code extension reads. Other profiles in that file are kept,
+and re-running the script does not duplicate the section.
 
 The documented flow:
 
@@ -55,11 +61,14 @@ dbt run --target databricks   # the same code on Databricks
 Databricks credentials come from a gitignored `.env`. The template is
 `.env.example`.
 
-### Snowflake removed
+### Old Snowflake setup removed
 
-Deleted `docs/snowflake_setup/`. Replaced `dbt-snowflake` with
-`dbt-databricks` in the devcontainer. Cleaned the Snowflake references from
-`README.md`, `docs/setup_instructions.md`, and the SQLTools settings.
+Deleted `docs/snowflake_setup/` and the old password + Duo MFA instructions.
+Snowflake itself came back later as an optional target, with key-pair
+authentication. See the Snowflake section below.
+
+The devcontainer installs `dbt-postgres`, `dbt-databricks` and `dbt-snowflake`,
+and the Databricks VS Code extension (`databricks.databricks`).
 
 ## Three bugs we fixed
 
@@ -80,15 +89,54 @@ Deleted `docs/snowflake_setup/`. Replaced `dbt-snowflake` with
 
 ## The portable source declaration
 
-The source data sits in a different place per backend. This one line lets the
-same project run on both:
+The source data sits in a different place per backend. This lets the same
+project run on all three. Verified per target by reading the parsed manifest:
+`postgres.tpch.customer`, `samples.tpch.customer`,
+`SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.customer`.
 
 ```yaml
 sources:
   - name: tpch
-    database: "{{ 'samples' if target.type == 'databricks' else 'postgres' }}"
-    schema: tpch
+    database: >-
+      {%- if target.type == 'databricks' -%}samples
+      {%- elif target.type == 'snowflake' -%}SNOWFLAKE_SAMPLE_DATA
+      {%- else -%}postgres
+      {%- endif -%}
+    schema: "{{ 'TPCH_SF1' if target.type == 'snowflake' else 'tpch' }}"
 ```
+
+## Snowflake: key-pair, not disabled MFA
+
+Jan planned to test whether MFA can be turned off per user. That path is
+closed. Two dates decide it:
+
+- **31 August 2026:** dbt stops supporting Snowflake password authentication.
+- **August to October 2026:** Snowflake blocks single-factor password sign-in
+  for every user, and converts `LEGACY_SERVICE` users to `SERVICE`, which
+  cannot use a password at all.
+
+Key-pair authentication is the supported answer. A key pair needs no second
+factor, so it removes the Duo problem that made us drop Snowflake two years
+ago. `docs/setup_instructions.md` holds the full steps: each student generates
+an RSA key pair, sends the public half to the instructor, and the instructor
+runs `ALTER USER <name> SET RSA_PUBLIC_KEY='...'`.
+
+We verified the mechanism without a Snowflake account. With a throwaway key
+pair, dbt built a JWT, reached the real host
+`ic07601.eu-west-1.snowflakecomputing.com`, and Snowflake answered
+`JWT token is invalid` — it rejected the key because the public half is not
+registered. Everything up to that point works, so a real test needs only a
+registered public key.
+
+To test it fully, pick one:
+
+1. Register a public key on a user in the existing Dataminded account, then run
+   `dbt debug --target snowflake`.
+2. Open a Snowflake trial (30 days, free credits, no card) and register the key
+   there.
+
+The TPC-H data needs no loading: every account has
+`SNOWFLAKE_SAMPLE_DATA.TPCH_SF1`, which is what the old slides used.
 
 ## Backend decision
 
@@ -130,8 +178,19 @@ concurrent tasks) are fine for this course.
 6. **Databricks exercise instructions are untested in a room.** Use the on-site
    edition as the test bed. Once they run smoothly, they can join the
    self-service track as an optional path.
-7. **The pull request is open to create:**
-   https://github.com/datamindedacademy/academy_dbt/pull/new/feature/self-service-exercises
+7. **Snowflake is not tested against a live account.** Everything up to the
+   JWT works. Register a public key on a Snowflake user, then run
+   `dbt debug --target snowflake`. Jan confirms with Jani whether the group
+   attends, which decides whether we need Snowflake at all.
+8. **The Databricks VS Code extension is wired but untested in a codespace.**
+   The `[academy]` profile lands in `~/.databrickscfg`, and the extension is in
+   the devcontainer list. Confirm it connects in a real codespace.
+9. **Slidev migration.** Jan wants the slides in the repo as markdown. Pascal
+   has a Dataminded template. Stretch goal, not a blocker for summer school.
+10. **Review the exercises and slides before 28 August.** Jamaria full-day
+    session on the 28th; Jan invites you to a review slot.
+11. **The pull request is open to create:**
+    https://github.com/datamindedacademy/academy_dbt/pull/new/feature/self-service-exercises
 
 ## Security note
 

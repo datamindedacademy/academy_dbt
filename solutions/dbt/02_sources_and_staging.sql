@@ -29,8 +29,12 @@ GROUP BY c.c_custkey, c.c_name;
 -- catalog on Databricks. This form runs on both backends:
 --   sources:
 --     - name: tpch
---       database: "{{ 'samples' if target.type == 'databricks' else 'postgres' }}"
---       schema: tpch
+--       database: >-
+--         {%- if target.type == 'databricks' -%}samples
+--         {%- elif target.type == 'snowflake' -%}SNOWFLAKE_SAMPLE_DATA
+--         {%- else -%}postgres
+--         {%- endif -%}
+--       schema: "{{ 'TPCH_SF1' if target.type == 'snowflake' else 'tpch' }}"
 --       tables:
 --         - name: customer
 --         - name: orders

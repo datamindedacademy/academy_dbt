@@ -1,15 +1,15 @@
 # Setup instructions
 
-This repository supports 2 databases to run SQL / dbt on:
+This repository supports 3 databases to run SQL / dbt on:
 
-- **Postgres:** No setup required. Everything is self-hosted inside the codespace.
-  Use this for the self-service track.
 - **Databricks Free Edition:** Each student creates a free personal workspace.
-  Use this for the on-site course.
+  This is the default for the on-site course.
+- **Postgres:** No setup required. Everything is self-hosted inside the
+  codespace. This is the backup, and the choice for the self-service track.
+- **Snowflake:** Optional. Use it when a client group asks for it.
 
-You can use both from the same dbt project: `create_profiles.sh` writes one
-profile with a `postgres` target and a `databricks` target. Switch with
-`--target`.
+You can use all of them from the same dbt project. `create_profiles.sh` writes
+one profile with a target per backend. Switch with `--target`.
 
 Start the codespace first:
 
@@ -29,9 +29,13 @@ It writes `~/.dbt/profiles.yml`. Useful options:
 
 ```bash
 ./create_profiles.sh --target databricks   # make databricks the default target
+./create_profiles.sh --target snowflake    # make snowflake the default target
 ./create_profiles.sh my_project            # also write a profile 'my_project'
 ./create_profiles.sh --help
 ```
+
+It writes to your HOME directory (`~/.dbt/profiles.yml`), so dbt, `dbt init`
+and the VS Code extensions all find it.
 
 The script writes a profile for every dbt project it finds in the repository,
 so **re-run it after you create a project with `dbt init`**. It is safe to run
@@ -114,22 +118,6 @@ Each student works in their own free workspace. One-time setup:
 - Your models land in catalog `workspace`, schema `dbt`.
 - You can also query interactively in the workspace's **SQL editor**.
 
-### One source declaration for both backends
-
-The source data sits in a different place per backend (`samples` on Databricks,
-`postgres` on Postgres). Let dbt pick the right one, so the same project runs
-on both:
-
-```yaml
-sources:
-  - name: tpch
-    database: "{{ 'samples' if target.type == 'databricks' else 'postgres' }}"
-    schema: tpch
-    tables:
-      - name: customer
-      - name: orders
-```
-
 ### Notes and limits
 
 - A rebuilt codespace loses `~/.dbt/profiles.yml`. Re-run
@@ -138,3 +126,90 @@ sources:
   warehouse, max 5 concurrent job tasks. Fine for this course.
 - Databricks may delete inactive accounts. Revoke tokens you no longer use
   (**Settings > Developer > Access tokens**).
+
+### The Databricks VS Code extension
+
+`create_profiles.sh` also writes an `[academy]` profile to `~/.databrickscfg`,
+which is the file the Databricks extension reads. Other profiles in that file
+are kept.
+
+1. Open the Databricks icon in the left sidebar.
+2. Choose **Configure** and pick the `academy` profile.
+3. You can now browse the catalog and run SQL from the editor, without a job.
+
+## Snowflake
+
+Use Snowflake only when a client group asks for it. Two things to know first:
+
+- **Password sign-in for dbt stops on 31 August 2026.** Snowflake removes
+  single-factor password logins in phases through October 2026.
+- **Key-pair authentication is the answer, not disabling MFA.** A key pair
+  needs no second factor, so it is the supported way to connect a tool like
+  dbt. It also removes the Duo problem that made us drop Snowflake before.
+
+### 1. Create a key pair
+
+Each student runs this once, in the codespace:
+
+```bash
+mkdir -p ~/.snowflake
+openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -nocrypt -out ~/.snowflake/rsa_key.p8
+openssl rsa -in ~/.snowflake/rsa_key.p8 -pubout -out ~/.snowflake/rsa_key.pub
+chmod 600 ~/.snowflake/rsa_key.p8
+cat ~/.snowflake/rsa_key.pub
+```
+
+Send the **public** key (`rsa_key.pub`) to the instructor. Never send the
+private key (`rsa_key.p8`).
+
+> Add `-v2 aes-256-cbc` to the `pkcs8` command if you want a passphrase on the
+> key. Then set `SNOWFLAKE_PRIVATE_KEY_PASSPHRASE` in `.env`.
+
+### 2. The instructor registers the public key
+
+Paste the key body without the header, the footer, and the line breaks:
+
+```sql
+ALTER USER winterschool_tarik SET RSA_PUBLIC_KEY='MIIBIjANBgkq...';
+```
+
+### 3. Configure the codespace
+
+Copy `.env.example` to `.env` and fill in the Snowflake block:
+
+```
+SNOWFLAKE_ACCOUNT=<orgname>-<account_name>
+SNOWFLAKE_USER=winterschool_<your first name>
+SNOWFLAKE_PRIVATE_KEY_PATH=~/.snowflake/rsa_key.p8
+SNOWFLAKE_ROLE=student
+SNOWFLAKE_WAREHOUSE=COMPUTE_WH
+SNOWFLAKE_DATABASE=WINTERSCHOOL
+```
+
+Then run `./create_profiles.sh` and test with
+`dbt debug --target snowflake`.
+
+### Using Snowflake in the exercises
+
+- The TPC-H source data is built in: database `SNOWFLAKE_SAMPLE_DATA`, schema
+  `TPCH_SF1`. Every account has it.
+- Your models land in `SNOWFLAKE_DATABASE`, schema `dbt`.
+
+## One source declaration for every backend
+
+The source data sits in a different place per backend. Let dbt pick the right
+one, so the same project runs on all three:
+
+```yaml
+sources:
+  - name: tpch
+    database: >-
+      {%- if target.type == 'databricks' -%}samples
+      {%- elif target.type == 'snowflake' -%}SNOWFLAKE_SAMPLE_DATA
+      {%- else -%}postgres
+      {%- endif -%}
+    schema: "{{ 'TPCH_SF1' if target.type == 'snowflake' else 'tpch' }}"
+    tables:
+      - name: customer
+      - name: orders
+```

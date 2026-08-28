@@ -58,6 +58,7 @@ Switch backend with `--target`:
 ```bash
 dbt run                        # postgres (the default target)
 dbt run --target databricks    # the same code on Databricks
+dbt run --target snowflake     # the same code on Snowflake, if configured
 ```
 
 The Databricks target needs a `.env` file. See

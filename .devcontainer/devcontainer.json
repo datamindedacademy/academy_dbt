@@ -44,7 +44,8 @@
                 "ms-python.debugpy",
                 "samuelcolvin.jinjahtml",
                 "mtxr.sqltools",
-                "mtxr.sqltools-driver-pg"
+                "mtxr.sqltools-driver-pg",
+                "databricks.databricks"
             ]
         }
     },

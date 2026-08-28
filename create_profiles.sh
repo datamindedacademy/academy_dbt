@@ -1,11 +1,17 @@
 #!/bin/bash
-# Generates ~/.dbt/profiles.yml for the course.
+# Generates ~/.dbt/profiles.yml for the course, in your HOME directory, so that
+# dbt, dbt init and the VS Code extensions all pick it up.
 #
-# Every profile it writes gets TWO targets:
-#   postgres    - the local database in the codespace (default)
+# Every profile it writes gets a target for each backend you configured:
+#   postgres    - the local database in the codespace (always written)
 #   databricks  - your Databricks Free Edition workspace (needs .env)
+#   snowflake   - a Snowflake account (needs .env)
 #
-# It writes a profile for:
+# It also writes an [academy] profile to ~/.databrickscfg, so the Databricks
+# VS Code extension connects to the same workspace. Other profiles in that
+# file are kept.
+#
+# It writes a dbt profile for:
 #   - every dbt project it finds in this repository (read from dbt_project.yml)
 #   - any extra name you pass as an argument
 #   - the fallback names dbt_test and covid
@@ -16,21 +22,23 @@
 # Usage:
 #   ./create_profiles.sh                       # postgres is the default target
 #   ./create_profiles.sh --target databricks   # databricks is the default target
+#   ./create_profiles.sh --target snowflake    # snowflake is the default target
 #   ./create_profiles.sh my_project            # also write a profile 'my_project'
 #
 # Then:
 #   dbt debug                        # tests the default target
-#   dbt debug --target databricks    # tests the databricks target
-#   dbt run --target databricks      # runs the project on Databricks
+#   dbt debug --target databricks    # tests one specific target
+#   dbt run --target databricks      # runs the project on that backend
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROFILES_PATH="${HOME}/.dbt/profiles.yml"
-DEFAULT_TARGET="postgres"
+DATABRICKS_CFG="${HOME}/.databrickscfg"
+DEFAULT_TARGET=""
 EXTRA_NAMES=()
 
 usage() {
-  sed -n '2,26p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,32p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
   exit 0
 }
 
@@ -38,10 +46,10 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     -t|--target)
       DEFAULT_TARGET="${2:-}"
-      if [[ "${DEFAULT_TARGET}" != "postgres" && "${DEFAULT_TARGET}" != "databricks" ]]; then
-        echo "Error: --target must be 'postgres' or 'databricks'." >&2
-        exit 1
-      fi
+      case "${DEFAULT_TARGET}" in
+        postgres|databricks|snowflake) ;;
+        *) echo "Error: --target must be postgres, databricks or snowflake." >&2; exit 1 ;;
+      esac
       shift 2
       ;;
     -h|--help) usage ;;
@@ -51,17 +59,19 @@ while [[ $# -gt 0 ]]; do
 done
 
 # ---------------------------------------------------------------------------
-# Load settings from .env (all optional except the Databricks credentials)
+# Load settings from .env (all optional except the credentials themselves)
 # ---------------------------------------------------------------------------
-DATABRICKS_HOST=""
-DATABRICKS_HTTP_PATH=""
-DATABRICKS_TOKEN=""
-DATABRICKS_CATALOG="workspace"
-DATABRICKS_SCHEMA="dbt"
-POSTGRES_HOST="db"
-POSTGRES_PORT="5432"
-POSTGRES_USER="postgres"
-POSTGRES_PASSWORD="postgres"
+DATABRICKS_HOST=""; DATABRICKS_HTTP_PATH=""; DATABRICKS_TOKEN=""
+DATABRICKS_CATALOG="workspace"; DATABRICKS_SCHEMA="dbt"
+
+SNOWFLAKE_ACCOUNT=""; SNOWFLAKE_USER=""
+SNOWFLAKE_PRIVATE_KEY_PATH=""; SNOWFLAKE_PRIVATE_KEY_PASSPHRASE=""
+SNOWFLAKE_PASSWORD=""
+SNOWFLAKE_ROLE=""; SNOWFLAKE_WAREHOUSE="COMPUTE_WH"
+SNOWFLAKE_DATABASE=""; SNOWFLAKE_SCHEMA="dbt"
+
+POSTGRES_HOST="db"; POSTGRES_PORT="5432"
+POSTGRES_USER="postgres"; POSTGRES_PASSWORD="postgres"
 POSTGRES_DBNAME="postgres"
 # Models are written HERE. It must differ from the source schema (tpch),
 # otherwise a model named e.g. "customer" replaces the raw source table.
@@ -75,17 +85,44 @@ if [[ -f "${SCRIPT_DIR}/.env" ]]; then
 fi
 
 # Strip a leading https:// from the host, a common copy-paste mistake
-DATABRICKS_HOST="${DATABRICKS_HOST#https://}"
-DATABRICKS_HOST="${DATABRICKS_HOST%/}"
+DATABRICKS_HOST="${DATABRICKS_HOST#https://}"; DATABRICKS_HOST="${DATABRICKS_HOST%/}"
 
 HAS_DATABRICKS="no"
 if [[ -n "${DATABRICKS_HOST}" && -n "${DATABRICKS_HTTP_PATH}" && -n "${DATABRICKS_TOKEN}" ]]; then
   HAS_DATABRICKS="yes"
 fi
 
+# Expand a leading ~ in the key path, in case it was quoted in .env
+if [[ "${SNOWFLAKE_PRIVATE_KEY_PATH}" == "~/"* ]]; then
+  SNOWFLAKE_PRIVATE_KEY_PATH="${HOME}/${SNOWFLAKE_PRIVATE_KEY_PATH#\~/}"
+fi
+
+HAS_SNOWFLAKE="no"; SNOWFLAKE_AUTH=""
+if [[ -n "${SNOWFLAKE_ACCOUNT}" && -n "${SNOWFLAKE_USER}" ]]; then
+  if [[ -n "${SNOWFLAKE_PRIVATE_KEY_PATH}" ]]; then
+    HAS_SNOWFLAKE="yes"; SNOWFLAKE_AUTH="key-pair"
+    if [[ ! -f "${SNOWFLAKE_PRIVATE_KEY_PATH}" ]]; then
+      echo "Warning: the Snowflake private key is missing:" >&2
+      echo "  ${SNOWFLAKE_PRIVATE_KEY_PATH}" >&2
+      echo "  See docs/setup_instructions.md to create the key pair." >&2
+    fi
+  elif [[ -n "${SNOWFLAKE_PASSWORD}" ]]; then
+    HAS_SNOWFLAKE="yes"; SNOWFLAKE_AUTH="password"
+  fi
+fi
+
+# Pick a sensible default target if the user did not ask for one
+if [[ -z "${DEFAULT_TARGET}" ]]; then
+  DEFAULT_TARGET="postgres"
+fi
 if [[ "${DEFAULT_TARGET}" == "databricks" && "${HAS_DATABRICKS}" == "no" ]]; then
-  echo "Error: --target databricks needs Databricks credentials." >&2
-  echo "Copy .env.example to .env and fill in the three values." >&2
+  echo "Error: --target databricks needs Databricks credentials in .env." >&2
+  echo "Copy .env.example to .env and fill in the Databricks values." >&2
+  exit 1
+fi
+if [[ "${DEFAULT_TARGET}" == "snowflake" && "${HAS_SNOWFLAKE}" == "no" ]]; then
+  echo "Error: --target snowflake needs Snowflake credentials in .env." >&2
+  echo "Set SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER and SNOWFLAKE_PRIVATE_KEY_PATH." >&2
   exit 1
 fi
 
@@ -95,7 +132,6 @@ fi
 NAMES=("dbt_test" "covid")
 NAMES+=("${EXTRA_NAMES[@]+"${EXTRA_NAMES[@]}"}")
 
-# Discover the profile name of every dbt project in this repository
 while IFS= read -r project_file; do
   discovered="$(sed -n 's/^profile:[[:space:]]*['"'"'"]\{0,1\}\([^'"'"'"]*\)['"'"'"]\{0,1\}[[:space:]]*$/\1/p' \
     "${project_file}" | head -1)"
@@ -103,7 +139,6 @@ while IFS= read -r project_file; do
 done < <(find "${SCRIPT_DIR}" -name dbt_project.yml -not -path '*/target/*' \
   -not -path '*/dbt_packages/*' -not -path '*/.git/*' 2>/dev/null)
 
-# Remove duplicates, keep the order
 UNIQUE_NAMES=()
 for name in "${NAMES[@]}"; do
   seen="no"
@@ -114,7 +149,7 @@ for name in "${NAMES[@]}"; do
 done
 
 # ---------------------------------------------------------------------------
-# Write the file
+# Write ~/.dbt/profiles.yml
 # ---------------------------------------------------------------------------
 emit_profile() {
   local profile_name="$1"
@@ -144,6 +179,30 @@ EOF
       threads: 4
 EOF
   fi
+  if [[ "${HAS_SNOWFLAKE}" == "yes" ]]; then
+    cat << EOF
+    snowflake:
+      type: snowflake
+      account: ${SNOWFLAKE_ACCOUNT}
+      user: ${SNOWFLAKE_USER}
+EOF
+    if [[ "${SNOWFLAKE_AUTH}" == "key-pair" ]]; then
+      echo "      private_key_path: ${SNOWFLAKE_PRIVATE_KEY_PATH}"
+      [[ -n "${SNOWFLAKE_PRIVATE_KEY_PASSPHRASE}" ]] && \
+        echo "      private_key_passphrase: ${SNOWFLAKE_PRIVATE_KEY_PASSPHRASE}"
+    else
+      # Password sign-in for dbt stops working on 2026-08-31. Use key-pair.
+      echo "      password: ${SNOWFLAKE_PASSWORD}"
+      echo "      authenticator: username_password_mfa"
+    fi
+    [[ -n "${SNOWFLAKE_ROLE}" ]] && echo "      role: ${SNOWFLAKE_ROLE}"
+    cat << EOF
+      warehouse: ${SNOWFLAKE_WAREHOUSE}
+      database: ${SNOWFLAKE_DATABASE}
+      schema: ${SNOWFLAKE_SCHEMA}
+      threads: 4
+EOF
+  fi
 }
 
 mkdir -p "$(dirname "${PROFILES_PATH}")"
@@ -154,8 +213,28 @@ mkdir -p "$(dirname "${PROFILES_PATH}")"
     emit_profile "${name}"
   done
 } > "${PROFILES_PATH}"
-
 chmod 600 "${PROFILES_PATH}"
+
+# ---------------------------------------------------------------------------
+# Write the [academy] profile in ~/.databrickscfg for the VS Code extension.
+# Any other profile in that file is kept as it is.
+# ---------------------------------------------------------------------------
+if [[ "${HAS_DATABRICKS}" == "yes" ]]; then
+  tmp_cfg="$(mktemp)"
+  if [[ -f "${DATABRICKS_CFG}" ]]; then
+    # Drop an existing [academy] section, keep everything else
+    awk 'BEGIN{skip=0} /^\[/{skip=($0=="[academy]")} !skip' "${DATABRICKS_CFG}" \
+      | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' > "${tmp_cfg}"
+    echo "" >> "${tmp_cfg}"
+  fi
+  cat >> "${tmp_cfg}" << EOF
+[academy]
+host  = https://${DATABRICKS_HOST}
+token = ${DATABRICKS_TOKEN}
+EOF
+  mv "${tmp_cfg}" "${DATABRICKS_CFG}"
+  chmod 600 "${DATABRICKS_CFG}"
+fi
 
 # ---------------------------------------------------------------------------
 # Report
@@ -166,10 +245,19 @@ echo "Default target: ${DEFAULT_TARGET}"
 echo "Targets in each profile:"
 echo "  postgres    ${POSTGRES_USER}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DBNAME}, models -> schema ${POSTGRES_SCHEMA}"
 if [[ "${HAS_DATABRICKS}" == "yes" ]]; then
-  echo "  databricks  ${DATABRICKS_HOST}, catalog ${DATABRICKS_CATALOG}, schema ${DATABRICKS_SCHEMA}"
+  echo "  databricks  ${DATABRICKS_HOST}, models -> ${DATABRICKS_CATALOG}.${DATABRICKS_SCHEMA}"
+  echo "Wrote the [academy] profile to ${DATABRICKS_CFG} for the VS Code extension."
 else
-  echo "  databricks  (not written: no .env file with credentials)"
-  echo "              Copy .env.example to .env, fill it in, then re-run this script."
+  echo "  databricks  (not written: no Databricks credentials in .env)"
+fi
+if [[ "${HAS_SNOWFLAKE}" == "yes" ]]; then
+  echo "  snowflake   ${SNOWFLAKE_ACCOUNT} as ${SNOWFLAKE_USER} (${SNOWFLAKE_AUTH}), models -> ${SNOWFLAKE_DATABASE}.${SNOWFLAKE_SCHEMA}"
+  if [[ "${SNOWFLAKE_AUTH}" == "password" ]]; then
+    echo "              WARNING: Snowflake stops password sign-in for dbt on 2026-08-31."
+    echo "              Switch to key-pair: set SNOWFLAKE_PRIVATE_KEY_PATH in .env."
+  fi
+else
+  echo "  snowflake   (not written: no Snowflake credentials in .env)"
 fi
 echo
 echo "To create a new dbt project without losing these targets, run:"
