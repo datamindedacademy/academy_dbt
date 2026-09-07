@@ -1,0 +1,83 @@
+version: 2
+models:
+- name: ca_sales_ext_monthly_order_value
+  description: Published sales report. One row per country and month. Country means
+    the customer's country. Include every order status.
+  columns:
+  - name: nation_id
+    data_type: bigint
+    description: Country identifier.
+    data_tests: &id001
+    - not_null
+  - name: nation_name
+    data_type: string
+    description: Country name.
+    data_tests: *id001
+  - name: order_month
+    data_type: date
+    description: First day of the order month.
+    data_tests: *id001
+  - name: order_count
+    data_type: bigint
+    description: Number of orders in this country and month.
+    data_tests: *id001
+  - name: customer_count
+    data_type: bigint
+    description: Distinct customers with orders in this country and month.
+    data_tests: *id001
+  - name: order_value
+    data_type: decimal(28,2)
+    description: Sum of order amounts. This metric is not invoiced revenue.
+    data_tests: *id001
+unit_tests:
+- name: monthly_totals_and_distinct_customers
+  description: Two orders from one customer count once. Countries and months remain
+    separate.
+  model: ca_sales_ext_monthly_order_value
+  given:
+  - input: ref('ca_sales_int_orders_enriched')
+    rows:
+    - order_id: 1
+      customer_id: 10
+      nation_id: 6
+      nation_name: FRANCE
+      order_date: '1995-01-03'
+      order_amount: 100
+    - order_id: 2
+      customer_id: 10
+      nation_id: 6
+      nation_name: FRANCE
+      order_date: '1995-01-20'
+      order_amount: 200
+    - order_id: 3
+      customer_id: 20
+      nation_id: 7
+      nation_name: GERMANY
+      order_date: '1995-01-25'
+      order_amount: 50
+    - order_id: 4
+      customer_id: 10
+      nation_id: 6
+      nation_name: FRANCE
+      order_date: '1995-02-01'
+      order_amount: 25
+  expect:
+    rows:
+    - nation_id: 6
+      nation_name: FRANCE
+      order_month: '1995-01-01'
+      order_count: 2
+      customer_count: 1
+      order_value: 300
+    - nation_id: 7
+      nation_name: GERMANY
+      order_month: '1995-01-01'
+      order_count: 1
+      customer_count: 1
+      order_value: 50
+    - nation_id: 6
+      nation_name: FRANCE
+      order_month: '1995-02-01'
+      order_count: 1
+      customer_count: 1
+      order_value: 25

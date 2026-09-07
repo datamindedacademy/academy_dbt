@@ -1,0 +1,72 @@
+version: 2
+models:
+- name: sa_tpch_ext_nations
+  description: Published country interface. One row per nation_id.
+  columns:
+  - name: nation_id
+    data_type: bigint
+    description: Country identifier.
+    data_tests: &id001
+    - unique
+    - not_null
+  - name: nation_name
+    data_type: string
+    description: Country name.
+    data_tests: &id002
+    - not_null
+- name: sa_tpch_ext_customers
+  description: Published customer interface. One row per customer_id.
+  columns:
+  - name: customer_id
+    data_type: bigint
+    description: Customer identifier.
+    data_tests: *id001
+  - name: customer_name
+    data_type: string
+    description: Customer name.
+    data_tests: *id002
+  - name: nation_id
+    data_type: bigint
+    description: Country of the customer.
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('sa_tpch_ext_nations')
+          field: nation_id
+- name: sa_tpch_ext_orders
+  description: Published order interface. One row per order_id. Include every order
+    status.
+  columns:
+  - name: order_id
+    data_type: bigint
+    description: Order identifier.
+    data_tests: *id001
+  - name: customer_id
+    data_type: bigint
+    description: Customer who places the order.
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('sa_tpch_ext_customers')
+          field: customer_id
+  - name: order_date
+    data_type: date
+    description: Date of the order.
+    data_tests: *id002
+  - name: order_status
+    data_type: string
+    description: 'O: open. P: partially fulfilled. F: fulfilled.'
+    data_tests:
+    - not_null
+    - accepted_values:
+        arguments:
+          values:
+          - O
+          - P
+          - F
+  - name: order_amount
+    data_type: decimal(18,2)
+    description: Total amount of the order. TPC-H does not specify a currency.
+    data_tests: *id002

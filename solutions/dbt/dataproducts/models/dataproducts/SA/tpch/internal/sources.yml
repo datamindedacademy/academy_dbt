@@ -1,0 +1,13 @@
+version: 2
+sources:
+  - name: tpch
+    description: Read-only TPC-H sample data supplied by Databricks.
+    database: samples
+    schema: tpch
+    tables:
+      - name: customer
+        description: One row per customer.
+      - name: orders
+        description: One row per order. The order amount includes all order lines.
+      - name: nation
+        description: One row per country.

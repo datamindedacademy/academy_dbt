@@ -1,0 +1,43 @@
+name: academy_dataproducts
+version: '1.0.0'
+config-version: 2
+profile: academy_dataproducts
+
+model-paths: [models]
+analysis-paths: [analyses]
+test-paths: [tests]
+macro-paths: [macros]
+clean-targets: [target, dbt_packages]
+
+vars:
+  report_interval_start: '1995-01-01'
+  report_interval_end: '1995-04-01' # Exclusive upper bound.
+  inject_duplicate_customer: false
+
+models:
+  academy_dataproducts:
+    +schema: dataproducts
+    +file_format: delta
+    dataproducts:
+      SA:
+        tpch:
+          +group: tpch
+          internal:
+            +access: private
+            +materialized: view
+          external:
+            +access: public
+            +materialized: table
+            +contract:
+              enforced: true
+      CA:
+        sales:
+          +group: sales
+          internal:
+            +access: private
+            +materialized: view
+          external:
+            +access: public
+            +materialized: table
+            +contract:
+              enforced: true

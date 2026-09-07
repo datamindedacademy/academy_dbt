@@ -1,0 +1,9 @@
+version: 2
+models:
+- name: sa_tpch_int_customers
+  description: Rename and type the customer source. Includes an optional duplicate
+    for the failure demonstration.
+- name: sa_tpch_int_orders
+  description: Rename and type the order source. Preserve all orders.
+- name: sa_tpch_int_nations
+  description: Rename and type the country source.

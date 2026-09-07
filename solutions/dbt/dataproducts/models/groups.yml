@@ -1,0 +1,8 @@
+version: 2
+groups:
+  - name: tpch
+    owner:
+      name: Academy source team
+  - name: sales
+    owner:
+      name: Academy sales team

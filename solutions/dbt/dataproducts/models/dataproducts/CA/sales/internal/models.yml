@@ -1,0 +1,5 @@
+version: 2
+models:
+- name: ca_sales_int_orders_enriched
+  description: Join published source interfaces. Keep orders in the reporting period.
+    One row per order.
