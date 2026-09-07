@@ -8,7 +8,8 @@ These answers use the Databricks `samples.tpch` data and follow the exercises on
 - [Data-product demo](dbt/dataproducts/) and [SQL pipeline](sql_pipeline/): the separate demonstration after exercise 11.
 
 Use the [Databricks setup guide](../docs/setup_instructions.md) for the connection.
-The [pipeline guide](sql_pipeline/) explains how to compare the two data-product implementations.
+The [instructor guide](../docs/run_both_pipelines.md) explains how to run and compare both pipelines.
+The SQL pipeline runs directly in the Databricks SQL editor.
 
 ## Exercise and slide map
 

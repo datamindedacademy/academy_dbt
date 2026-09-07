@@ -91,8 +91,9 @@ Open forwarded port 8080 in Codespaces.
 
 ## Compare the result with plain SQL
 
-The [complete SQL pipeline](../../sql_pipeline/) builds the same eight objects and runs 27 matching data checks.
-Use the [SQL pipeline guide](../../sql_pipeline/) for the comparison and the failure demonstration.
+The [plain SQL script](../../sql_pipeline/run_pipeline.sql) builds the same eight objects and returns 27 matching check results.
+Run it directly in the Databricks SQL editor. Inspect the failure counts before you continue.
+Use the [instructor guide](../../../docs/run_both_pipelines.md) for both workflows and the failure demonstration.
 
 Run [the complete SQL query](../../sql/06_data_products.sql) in Databricks SQL or SQLTools.
 It uses the same sources and the same default reporting period.
@@ -103,8 +104,8 @@ It detects extra, missing, or changed rows.
 |---|---|---|
 | Calculate the report | One supplied SQL query | SQL split into eight models |
 | Store intermediate results | Add table or view statements | Configure views and tables in YAML |
-| Choose execution order | Supply an ordered script | Use the dependencies from `ref()` |
-| Check data | Write SQL assertions and handle failures | Run attached tests with `dbt build` |
+| Choose execution order | Maintain the CREATE statements in execution order | Use the dependencies from `ref()` |
+| Check data | Run check queries and inspect their failure counts | Run attached tests with `dbt build` |
 | Describe interfaces | Maintain interface definitions | Add model contracts and descriptions |
 
 ## See the tests
