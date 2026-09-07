@@ -1,6 +1,6 @@
 # dbt exercises
 
-Use the `dbt_test` project throughout exercises 1–11.
+Use the `dbt_academy` project throughout exercises 1–11.
 Run dbt commands inside that folder unless an exercise specifies the repository root.
 Exercise 6 uses a diagram and requires no model files.
 

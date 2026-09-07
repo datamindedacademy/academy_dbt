@@ -7,7 +7,7 @@ Change how dbt stores a model and compare the results.
 
    ```yaml
    models:
-     dbt_test:
+     dbt_academy:
        +materialized: table
    ```
 

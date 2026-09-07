@@ -15,7 +15,7 @@
 # It writes a dbt profile for:
 #   - every dbt project it finds in this repository (read from dbt_project.yml)
 #   - any extra name you pass as an argument
-#   - the fallback names dbt_test and covid
+#   - the fallback names dbt_academy and covid
 #
 # Re-run it any time. It is safe to run twice, and it repairs the file after
 # `dbt init` has overwritten it.
@@ -137,7 +137,7 @@ fi
 # ---------------------------------------------------------------------------
 # Collect the profile names to write
 # ---------------------------------------------------------------------------
-NAMES=("dbt_test" "covid")
+NAMES=("dbt_academy" "covid")
 if [[ ${#EXTRA_NAMES[@]} -gt 0 ]]; then
   NAMES+=("${EXTRA_NAMES[@]}")
 fi

@@ -76,7 +76,7 @@ The script reads `.env` and writes the dbt connection profile to `~/.dbt/profile
 It also creates a link named `profiles.yml` in the repository folder.
 Open `profiles.yml` in the Codespace Explorer to see the connection settings.
 Both paths open the same file. Git ignores the link because the file contains your token.
-It selects Databricks and includes the profile for the course project, `dbt_test`.
+It selects Databricks and includes the profile for the course project, `dbt_academy`.
 The default destination is catalog `workspace`, schema `dbt`.
 
 The script replaces `~/.dbt/profiles.yml`. Back up that file first if it contains profiles from another course.
@@ -86,11 +86,11 @@ The script replaces `~/.dbt/profiles.yml`. Back up that file first if it contain
 In the **Codespace terminal**, run:
 
 ```bash
-dbt init dbt_test --skip-profile-setup
-dbt debug --project-dir dbt_test
+dbt init dbt_academy --skip-profile-setup
+dbt debug --project-dir dbt_academy
 ```
 
-Skip the first command if `dbt_test` already exists.
+Skip the first command if `dbt_academy` already exists.
 The `--skip-profile-setup` option keeps the connection profile from step 5.
 
 The final output should include:
@@ -123,7 +123,7 @@ Use full table names, such as `samples.tpch.customer`, in the SQL exercises.
 In the **Codespace terminal**, run:
 
 ```bash
-dbt run --project-dir dbt_test
+dbt run --project-dir dbt_academy
 ```
 
 In Databricks, open **Catalog > workspace > dbt**. Refresh the catalog if needed.
@@ -149,7 +149,7 @@ The project from step 6 also serves as your project for dbt exercise 1.
 | Incomplete Databricks settings | Fill all three values in `.env`, save it, and repeat step 5. |
 | Invalid token or HTTP 401/403 | Check the token's workspace, expiry, scopes, and warehouse permissions. Replace the token if needed. Repeat step 5. |
 | Token creation is unavailable | Check the workspace token permissions with your instructor. |
-| Could not find profile | Repeat step 5, then repeat `dbt debug --project-dir dbt_test`. |
+| Could not find profile | Repeat step 5, then repeat `dbt debug --project-dir dbt_academy`. |
 | Connection works, but models fail | Check access to catalog `workspace` and permission to create objects in schema `dbt`. |
 | Cannot find the sample table | Use the full name `samples.tpch.customer`. |
 | Warehouse quota reached | Ask your instructor for help. The workspace cannot run more queries until its quota resets. |
@@ -161,7 +161,7 @@ Run:
 
 ```bash
 ./create_profiles.sh --target databricks
-dbt debug --project-dir dbt_test
+dbt debug --project-dir dbt_academy
 ```
 
 Repeat these commands after a Codespace rebuild.
