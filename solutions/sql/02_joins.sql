@@ -20,7 +20,7 @@ INNER JOIN samples.tpch.lineitem AS l ON l.l_orderkey = o.o_orderkey
 WHERE l.l_discount > 0.09;
 
 -- 4. All customers that have never placed an order
-SELECT c.c_name
+SELECT c.*, o.*
 FROM samples.tpch.customer AS c
 LEFT JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
 WHERE o.o_orderkey IS NULL;

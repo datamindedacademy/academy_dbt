@@ -18,32 +18,32 @@ INNER JOIN samples.tpch.nation AS n ON c.c_nationkey = n.n_nationkey
 WHERE n.n_name = 'GERMANY';
 
 -- 4. The amount of customers per country, most customers first
-SELECT n.n_name AS nation, COUNT(*) AS num_customers
+SELECT n.n_name AS nation, COUNT(c.c_custkey) AS num_customers
 FROM samples.tpch.customer AS c
 INNER JOIN samples.tpch.nation AS n ON c.c_nationkey = n.n_nationkey
 GROUP BY n.n_name
 ORDER BY num_customers DESC;
 
 -- 5. Total and average amount spent per customer, best customers first
--- Keep customers without orders. Their total and average are NULL.
+-- Keep customers without orders. Their total is zero and their average is NULL.
 SELECT
-    c.c_name,
-    SUM(o.o_totalprice) AS total_spent,
-    AVG(o.o_totalprice) AS avg_spent
+    c.c_name AS customer_name,
+    SUM(COALESCE(o.o_totalprice, 0)) AS total_spent,
+    AVG(o.o_totalprice) AS avg_order
 FROM samples.tpch.customer AS c
 LEFT JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
 GROUP BY c.c_custkey, c.c_name
 ORDER BY total_spent DESC;
 
 -- 6. All the customers that have placed more than 25 orders
-SELECT c.c_name, COUNT(*) AS num_orders
+SELECT c.c_name AS customer_name, COUNT(*) AS num_orders
 FROM samples.tpch.customer AS c
 INNER JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
 GROUP BY c.c_custkey, c.c_name
 HAVING COUNT(*) > 25;
 
 -- 7. The customers that have placed more than 15 orders above 100 000
-SELECT c.c_name, COUNT(*) AS num_big_orders
+SELECT c.c_name AS customer_name, COUNT(*) AS num_orders
 FROM samples.tpch.customer AS c
 INNER JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
 WHERE o.o_totalprice > 100000        -- filters individual orders

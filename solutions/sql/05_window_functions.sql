@@ -1,34 +1,39 @@
 -- Solutions: SQL exercise 5 — Window functions
 
--- For each nation: our top-3 highest-revenue customers in that nation.
--- Step 1: revenue per customer. Step 2: rank within the nation.
--- Ties use the customer key so each nation has at most three rows.
--- Step 3: filter on the rank (a window function cannot go in WHERE).
-WITH customer_revenue AS (
+-- Top-three revenue ranks per nation, as in the supplied reference answers.
+-- RANK keeps ties, so a nation can have more than three result rows.
+-- Revenue uses full order prices without line-item discounts.
+WITH revenue_per_customer AS (
     SELECT
         c.c_custkey,
-        n.n_name AS nation,
-        c.c_name AS customer,
-        SUM(o.o_totalprice) AS revenue
+        c.c_name,
+        c.c_nationkey,
+        SUM(o.o_totalprice) AS total_revenue
     FROM samples.tpch.customer AS c
-    INNER JOIN samples.tpch.nation AS n ON c.c_nationkey = n.n_nationkey
     INNER JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
-    GROUP BY n.n_name, c.c_custkey, c.c_name
+    GROUP BY c.c_custkey, c.c_name, c.c_nationkey
 ),
 
-ranked AS (
+customer_with_rank AS (
     SELECT
-        nation,
-        customer,
-        revenue,
-        ROW_NUMBER() OVER (
-            PARTITION BY nation
-            ORDER BY revenue DESC, c_custkey
-        ) AS revenue_rank
-    FROM customer_revenue
+        c_name,
+        c_nationkey,
+        total_revenue,
+        RANK() OVER (
+            PARTITION BY c_nationkey
+            ORDER BY total_revenue DESC
+        ) AS rank_in_nation
+    FROM revenue_per_customer
 )
 
-SELECT nation, customer, revenue, revenue_rank
-FROM ranked
-WHERE revenue_rank <= 3
-ORDER BY nation, revenue_rank;
+SELECT n.n_name, c.c_name, c.c_nationkey, c.total_revenue, c.rank_in_nation
+FROM customer_with_rank AS c
+INNER JOIN samples.tpch.nation AS n ON c.c_nationkey = n.n_nationkey
+WHERE c.rank_in_nation <= 3
+ORDER BY n.n_name, c.rank_in_nation, c.c_name;
+
+-- For at most three rows per nation, as explained in the exercise hint:
+-- include c_custkey in customer_with_rank and use
+-- ROW_NUMBER() OVER (
+--     PARTITION BY c_nationkey ORDER BY total_revenue DESC, c_custkey
+-- ) AS rank_in_nation
