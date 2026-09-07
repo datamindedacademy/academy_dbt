@@ -1,75 +1,31 @@
-# Exercise 2 — Sources, staging models, and the DAG
+# dbt exercise 2: Declare sources and build models
 
-## Goal
+Build `customer_stats` from the customer and orders source tables.
 
-Declare the raw TPC-H tables as *sources*, build staging models on top of them
-with `source()`, and build a downstream model with `ref()`.
+1. Create `models/sources.yml`:
 
-## Why this matters
+   ```yaml
+   version: 2
+   sources:
+     - name: tpch
+       database: samples
+       schema: tpch
+       tables:
+         - name: customer
+         - name: orders
+   ```
 
-dbt's superpower is *modularity*: build the final result piece by piece instead
-of in one giant query. For that, dbt must know how your models depend on each
-other. The `ref()` and `source()` functions create those links, and from them dbt
-derives a **DAG** (Directed Acyclic Graph) — so it always runs everything in the
-right order, and can even parallelize.
+2. Create `models/stg_customer.sql`:
 
-## Concepts
+   ```sql
+   select * from {{ source('tpch', 'customer') }}
+   ```
 
-**Sources** represent raw data that already exists in the warehouse (dbt only
-does the "T" — the data was Extracted and Loaded by something else). You declare
-them once in a `.yml` file inside `models/`:
+3. Create `models/stg_orders.sql` with the same pattern for `orders`.
+4. Create `models/customer_stats.sql`. Join both staging models with `ref()`.
+5. Return one row per `c_custkey`. Name `sum(o_totalprice)` as `total_spent`.
+6. Run `dbt run`. Inspect `workspace.dbt.customer_stats`.
 
-```yaml
-sources:
-  - name: tpch
-    database: >-
-      {%- if target.type == 'databricks' -%}samples
-      {%- elif target.type == 'snowflake' -%}SNOWFLAKE_SAMPLE_DATA
-      {%- else -%}postgres
-      {%- endif -%}
-    schema: "{{ 'TPCH_SF1' if target.type == 'snowflake' else 'tpch' }}"
-    tables:
-      - name: customer
-      - name: orders
-```
-
-The `database` setting means the catalog on Databricks.
-This declaration selects `samples.tpch` on Databricks and `postgres.tpch` on Postgres.
-
-**Referring to data.** In a model, never hard-code table names:
-
-- `{{ source('tpch', 'customer') }}` — read from a declared source table
-- `{{ ref('stg_customer') }}` — read from another dbt model
-
-Both compile to the real table name *and* register a dependency edge in the DAG.
-If a raw table moves or gets renamed, you update one `.yml` file instead of
-every query.
-
-**Staging models** (by convention prefixed `stg_`) are thin, clean wrappers
-around sources — the first layer of every dbt project:
-
-```sql
--- models/stg_customer.sql
-SELECT * FROM {{ source('tpch', 'customer') }}
-```
-
-## Exercise
-
-In the dbt project you created in exercise 1:
-
-1. Create `models/sources.yml`. Copy the source declaration above.
-2. Add at least the tables `customer` and `orders` to this source.
-3. Add 2 models: `stg_customer.sql` and `stg_orders.sql` that select all
-   columns from their respective source.
-4. Add a model `customer_stats.sql` which gives for each customer (`c_custkey`)
-   the total amount spent (= sum of prices of all their orders).
-5. *(Optional)* Calculate more customer statistics.
-
-Run `dbt run` and check the resulting tables/views in the database.
-
-## Tips
-
-- `customer_stats` must read from the *staging models* with `ref()`, not from
-  the sources directly. That's the layering habit that pays off later.
-- The amount spent per customer is a `GROUP BY` on the orders — you wrote almost
-  this exact query in SQL exercise 3.
+Use a left join from customers to orders to retain customers without orders.
+Match `c_custkey` to `o_custkey`.
+On Databricks, `database` means catalog. For the Postgres backup, use `database: postgres`.

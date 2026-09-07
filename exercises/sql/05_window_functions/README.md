@@ -1,54 +1,10 @@
-# Exercise 5 — Window functions
+# SQL exercise 5: Rank customers within each nation
 
-## Goal
+Return the three customers with the highest total order value in each nation.
 
-Use a window function (`RANK() OVER (...)`) to compute a value that depends on
-*other* rows, and combine it with a CTE to filter on the result.
+1. Sum `o_totalprice` per customer. Include the customer name and nation.
+2. Rank customers within their nation, with the highest total first.
+3. Put the rank calculation in a CTE. Select ranks 1 to 3.
 
-## Why this matters
-
-Some questions cannot be answered by plain aggregation: "top 3 per group",
-"running total", "difference with the previous row". Aggregation collapses rows;
-window functions keep every row and add context *about* the surrounding rows.
-
-## Concepts
-
-A window function calculates something about a set of related rows (the
-"window") while keeping each individual row. You recognize it by the keyword
-`OVER`:
-
-```sql
-SELECT
-    game,
-    player,
-    score,
-    RANK() OVER (
-        PARTITION BY game        -- restart the ranking for each game
-        ORDER BY score DESC      -- highest score gets rank 1
-    ) AS rank
-FROM highscores;
-```
-
-- `PARTITION BY` splits the rows into groups (like `GROUP BY`, but without
-  collapsing them).
-- `ORDER BY` inside `OVER` defines the ranking order within each group.
-
-Typical uses: rankings, running sums, difference with the previous row.
-
-One catch: you cannot put a window function in a `WHERE` clause (it is computed
-too late — see the evaluation order in exercise 3). The standard trick: compute
-the rank in a CTE, then filter on it in the next step.
-
-## Exercise
-
-For each nation, show me our top-3 highest-revenue customers in that nation.
-
-> Tip: first calculate each customer's rank within their nation, then make that
-> a CTE and filter on it.
-
-## Tips
-
-- "Revenue of a customer" here: the sum of `o_totalprice` over their orders.
-  Compute it with a `GROUP BY` first (in its own CTE).
-- Then rank with `RANK() OVER (PARTITION BY nation ORDER BY revenue DESC)`.
-- Then `WHERE rank <= 3` in the final select.
+Use `row_number() over (partition by ... order by ...)` for at most three rows per nation.
+Use a stable tie-breaker, such as the customer key. `rank()` can include more rows when customers tie.

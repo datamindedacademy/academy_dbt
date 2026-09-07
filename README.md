@@ -44,7 +44,6 @@ For the backup, use SQLTools or pgAdmin on port 5052.
 Snowflake is optional; see [the setup instructions](docs/setup_instructions.md).
 
 Exercise 11 includes a TPC-H capstone with the existing sample data.
-The Covid version needs separate data and SQL changes.
 
 ## Resources
 
