@@ -2,12 +2,12 @@
 
 Create a project and run its example models on Databricks.
 
-1. Run these commands from the repository root. Skip `dbt init` if `dbt_test` already exists.
+1. Run these commands from the repository root. Skip `dbt init` if `dbt_academy` already exists.
 
    ```bash
-   dbt init dbt_test --skip-profile-setup
+   dbt init dbt_academy --skip-profile-setup
    ./create_profiles.sh --target databricks
-   cd dbt_test
+   cd dbt_academy
    dbt debug
    dbt run
    ```

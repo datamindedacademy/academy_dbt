@@ -13,13 +13,13 @@ This repository contains exercises for the SQL & dbt course of the Dataminded Ac
 4. Run these commands in the repository root:
 
 ```bash
-dbt init dbt_test --skip-profile-setup
+dbt init dbt_academy --skip-profile-setup
 ./create_profiles.sh --target databricks
-dbt debug --project-dir dbt_test
-dbt run --project-dir dbt_test
+dbt debug --project-dir dbt_academy
+dbt run --project-dir dbt_academy
 ```
 
-Skip `dbt init` if the `dbt_test` project already exists.
+Skip `dbt init` if the `dbt_academy` project already exists.
 A successful `dbt debug` confirms the connection.
 The example models appear in `workspace.dbt`.
 The starter project contains one deliberate null value, so its `not_null` test fails until exercise 5 fixes it.

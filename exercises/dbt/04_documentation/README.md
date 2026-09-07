@@ -2,7 +2,7 @@
 
 Generate the documentation and inspect model dependencies.
 
-1. Run these commands inside `dbt_test`:
+1. Run these commands inside `dbt_academy`:
 
    ```bash
    dbt docs generate

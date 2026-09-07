@@ -1,6 +1,6 @@
 # dbt exercise 6: Select models from a graph
 
-Write commands for this example graph. These models are not files in `dbt_test`.
+Write commands for this example graph. These models are not files in `dbt_academy`.
 
 ```mermaid
 graph LR

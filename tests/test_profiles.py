@@ -34,13 +34,13 @@ class ProfilesTest(unittest.TestCase):
 
     def test_postgres_without_env_has_no_empty_profile(self):
         profiles = self.run_script()
-        self.assertEqual(set(profiles), {'dbt_test', 'covid'})
-        self.assertEqual(profiles['dbt_test']['target'], 'postgres')
+        self.assertEqual(set(profiles), {'dbt_academy', 'covid'})
+        self.assertEqual(profiles['dbt_academy']['target'], 'postgres')
         self.assertFalse(self.cfg.exists())
 
     def test_databricks_default_and_normalized_host(self):
         self.databricks()
-        profile = self.run_script()['dbt_test']
+        profile = self.run_script()['dbt_academy']
         self.assertEqual(profile['target'], 'databricks')
         self.assertEqual(profile['outputs']['databricks']['host'], 'example.cloud.databricks.com')
         self.assertEqual((self.profiles / 'profiles.yml').stat().st_mode & 0o777, 0o600)
@@ -48,13 +48,45 @@ class ProfilesTest(unittest.TestCase):
 
     def test_explicit_postgres(self):
         self.databricks()
-        self.assertEqual(self.run_script('--target', 'postgres')['dbt_test']['target'], 'postgres')
+        self.assertEqual(self.run_script('--target', 'postgres')['dbt_academy']['target'], 'postgres')
+
+    def test_visible_profile_tracks_regenerated_credentials(self):
+        self.databricks()
+        self.run_script('--target', 'databricks')
+        visible = self.root / 'profiles.yml'
+        self.assertTrue(visible.is_symlink())
+        self.assertTrue(visible.samefile(self.profiles / 'profiles.yml'))
+        with (self.root / '.env').open('a') as stream:
+            stream.write('DATABRICKS_TOKEN=replacement-fake-token\n')
+        self.run_script('--target', 'databricks')
+        profile = yaml.safe_load(visible.read_text())['dbt_academy']
+        self.assertEqual(profile['outputs']['databricks']['token'], 'replacement-fake-token')
+        self.assertEqual(visible.stat().st_mode & 0o777, 0o600)
+
+    def test_existing_repository_profile_is_preserved(self):
+        self.run_script()
+        original = (self.profiles / 'profiles.yml').read_bytes()
+        visible = self.root / 'profiles.yml'
+        visible.unlink()
+        visible.write_text('existing profile\n')
+        self.databricks()
+        self.run_script('--target', 'databricks', succeeds=False)
+        self.assertEqual(visible.read_text(), 'existing profile\n')
+        self.assertEqual((self.profiles / 'profiles.yml').read_bytes(), original)
+
+    def test_profiles_directory_can_be_repository_root(self):
+        self.profiles = self.root
+        self.env['DBT_PROFILES_DIR'] = str(self.root)
+        self.databricks()
+        self.run_script('--target', 'databricks')
+        self.run_script('--target', 'databricks')
+        self.assertFalse((self.root / 'profiles.yml').is_symlink())
 
     def test_project_profile_and_extra_name(self):
         project = self.root / 'student'
         project.mkdir()
         (project / 'dbt_project.yml').write_text('name: student\nprofile: "custom" # comment\n')
-        self.assertEqual(set(self.run_script('extra')), {'dbt_test', 'covid', 'custom', 'extra'})
+        self.assertEqual(set(self.run_script('extra')), {'dbt_academy', 'covid', 'custom', 'extra'})
 
     def test_incomplete_credentials_do_not_replace_profiles(self):
         self.run_script()
@@ -76,7 +108,7 @@ class ProfilesTest(unittest.TestCase):
 
     def test_password_with_yaml_punctuation(self):
         (self.root / '.env').write_text('POSTGRES_PASSWORD="a: b # c\'d"\n')
-        self.assertEqual(self.run_script()['dbt_test']['outputs']['postgres']['password'], "a: b # c'd")
+        self.assertEqual(self.run_script()['dbt_academy']['outputs']['postgres']['password'], "a: b # c'd")
 
     def test_missing_target_credentials(self):
         self.run_script('--target', 'databricks', succeeds=False)
