@@ -25,12 +25,13 @@ GROUP BY n.n_name
 ORDER BY num_customers DESC;
 
 -- 5. Total and average amount spent per customer, best customers first
+-- Keep customers without orders. Their total and average are NULL.
 SELECT
     c.c_name,
     SUM(o.o_totalprice) AS total_spent,
     AVG(o.o_totalprice) AS avg_spent
 FROM samples.tpch.customer AS c
-INNER JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
+LEFT JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
 GROUP BY c.c_custkey, c.c_name
 ORDER BY total_spent DESC;
 
