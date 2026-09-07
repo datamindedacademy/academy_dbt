@@ -73,6 +73,9 @@ In the **Codespace terminal**, run:
 ```
 
 The script reads `.env` and writes the dbt connection profile to `~/.dbt/profiles.yml`.
+It also creates a link named `profiles.yml` in the repository folder.
+Open `profiles.yml` in the Codespace Explorer to see the connection settings.
+Both paths open the same file. Git ignores the link because the file contains your token.
 It selects Databricks and includes the profile for the course project, `dbt_test`.
 The default destination is catalog `workspace`, schema `dbt`.
 

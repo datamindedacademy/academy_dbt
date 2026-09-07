@@ -16,6 +16,7 @@ logs/
 
 # Databricks credentials (each student creates their own from .env.example)
 .env
+/profiles.yml
 
 .DS_Store
 __pycache__/

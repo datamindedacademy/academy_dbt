@@ -50,6 +50,38 @@ class ProfilesTest(unittest.TestCase):
         self.databricks()
         self.assertEqual(self.run_script('--target', 'postgres')['dbt_test']['target'], 'postgres')
 
+    def test_visible_profile_tracks_regenerated_credentials(self):
+        self.databricks()
+        self.run_script('--target', 'databricks')
+        visible = self.root / 'profiles.yml'
+        self.assertTrue(visible.is_symlink())
+        self.assertTrue(visible.samefile(self.profiles / 'profiles.yml'))
+        with (self.root / '.env').open('a') as stream:
+            stream.write('DATABRICKS_TOKEN=replacement-fake-token\n')
+        self.run_script('--target', 'databricks')
+        profile = yaml.safe_load(visible.read_text())['dbt_test']
+        self.assertEqual(profile['outputs']['databricks']['token'], 'replacement-fake-token')
+        self.assertEqual(visible.stat().st_mode & 0o777, 0o600)
+
+    def test_existing_repository_profile_is_preserved(self):
+        self.run_script()
+        original = (self.profiles / 'profiles.yml').read_bytes()
+        visible = self.root / 'profiles.yml'
+        visible.unlink()
+        visible.write_text('existing profile\n')
+        self.databricks()
+        self.run_script('--target', 'databricks', succeeds=False)
+        self.assertEqual(visible.read_text(), 'existing profile\n')
+        self.assertEqual((self.profiles / 'profiles.yml').read_bytes(), original)
+
+    def test_profiles_directory_can_be_repository_root(self):
+        self.profiles = self.root
+        self.env['DBT_PROFILES_DIR'] = str(self.root)
+        self.databricks()
+        self.run_script('--target', 'databricks')
+        self.run_script('--target', 'databricks')
+        self.assertFalse((self.root / 'profiles.yml').is_symlink())
+
     def test_project_profile_and_extra_name(self):
         project = self.root / 'student'
         project.mkdir()
