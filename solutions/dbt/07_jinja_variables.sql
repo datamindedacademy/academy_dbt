@@ -1,4 +1,10 @@
 -- Solutions: dbt exercise 7 — Jinja variables
+-- Run the completed dbt answer in the Codespace terminal, from the repository root:
+-- dbt run --project-dir solutions/dbt/exercises --select +orders
+-- dbt test --project-dir solutions/dbt/exercises --select orders
+-- dbt show --project-dir solutions/dbt/exercises --select orders --limit 10
+-- These commands use solutions/dbt/exercises. They do not execute this snippet file.
+
 -- Compiled form (runnable directly). The dbt/Jinja original is in comments.
 
 -- In dbt_project.yml:

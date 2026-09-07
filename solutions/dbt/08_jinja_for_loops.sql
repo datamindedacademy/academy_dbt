@@ -1,4 +1,9 @@
 -- Solutions: dbt exercise 8 — Jinja for loops
+-- Run the completed dbt answer in the Codespace terminal, from the repository root:
+-- dbt run --project-dir solutions/dbt/exercises --select +customer_stats
+-- dbt show --project-dir solutions/dbt/exercises --select customer_stats --limit 10
+-- These commands use solutions/dbt/exercises. They do not execute this snippet file.
+
 -- Compiled form (runnable directly). The dbt/Jinja original is in comments.
 
 -- models/customer_stats.sql:

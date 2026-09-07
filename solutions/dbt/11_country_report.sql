@@ -1,4 +1,11 @@
 -- Solution: dbt exercise 11. Compare with workspace.dbt.revenue_per_nation.
+-- Run the completed dbt answer in the Codespace terminal, from the repository root:
+-- dbt build --project-dir solutions/dbt/exercises --select +revenue_per_nation
+-- dbt show --project-dir solutions/dbt/exercises --select revenue_per_nation --limit 10
+-- dbt show --project-dir solutions/dbt/exercises --select compare_country_report
+-- dbt docs generate --project-dir solutions/dbt/exercises
+-- These commands use solutions/dbt/exercises. They do not execute this snippet file.
+
 select
     n.n_nationkey as nation_key,
     n.n_name as nation,

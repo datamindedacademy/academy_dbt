@@ -1,4 +1,10 @@
 -- Solution: dbt exercise 5. A SQL test passes when it returns zero rows.
+-- Run the completed dbt answer in the Codespace terminal, from the repository root:
+-- dbt build --project-dir solutions/dbt/exercises --select +customer_stats my_first_dbt_model my_second_dbt_model
+-- dbt test --project-dir solutions/dbt/exercises --select customer_stats my_first_dbt_model my_second_dbt_model
+-- These commands use solutions/dbt/exercises. They do not execute this snippet file.
+-- The completed models already contain the null fix; these tests should pass.
+
 -- First fix models/example/my_first_dbt_model.sql to return only id = 1.
 -- Run dbt build to replace its data and run the starter tests.
 --
