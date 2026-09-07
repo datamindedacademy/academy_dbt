@@ -10,4 +10,12 @@ logs/
 .vscode-remote/
 /audience_measurement/logs/
 /venv/
+/.venv/
 *.csv
+!**/seeds/*.csv
+
+# Databricks credentials (each student creates their own from .env.example)
+.env
+
+.DS_Store
+__pycache__/
