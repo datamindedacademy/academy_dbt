@@ -1,0 +1,7 @@
+snapshots:
+  - name: country_codes_snapshot
+    relation: ref('country_codes')
+    config:
+      unique_key: country_code
+      strategy: check
+      check_cols: all

@@ -15,26 +15,22 @@ SELECT * FROM samples.tpch.orders;
 --       c.c_name,
 --       SUM(o.o_totalprice) AS total_spent
 --   FROM {{ ref('stg_customer') }} AS c
---   INNER JOIN {{ ref('stg_orders') }} AS o ON o.o_custkey = c.c_custkey
+--   LEFT JOIN {{ ref('stg_orders') }} AS o ON o.o_custkey = c.c_custkey
 --   GROUP BY c.c_custkey, c.c_name
 SELECT
     c.c_custkey,
     c.c_name,
     SUM(o.o_totalprice) AS total_spent
 FROM samples.tpch.customer AS c
-INNER JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
+LEFT JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
 GROUP BY c.c_custkey, c.c_name;
 
--- The source declaration (models/schema.yml). The "database" key is the
--- catalog on Databricks. This form runs on both backends:
+-- models/sources.yml:
+--   version: 2
 --   sources:
 --     - name: tpch
---       database: >-
---         {%- if target.type == 'databricks' -%}samples
---         {%- elif target.type == 'snowflake' -%}SNOWFLAKE_SAMPLE_DATA
---         {%- else -%}postgres
---         {%- endif -%}
---       schema: "{{ 'TPCH_SF1' if target.type == 'snowflake' else 'tpch' }}"
+--       database: samples
+--       schema: tpch
 --       tables:
 --         - name: customer
 --         - name: orders

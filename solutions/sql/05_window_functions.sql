@@ -2,16 +2,18 @@
 
 -- For each nation: our top-3 highest-revenue customers in that nation.
 -- Step 1: revenue per customer. Step 2: rank within the nation.
+-- Ties use the customer key so each nation has at most three rows.
 -- Step 3: filter on the rank (a window function cannot go in WHERE).
 WITH customer_revenue AS (
     SELECT
+        c.c_custkey,
         n.n_name AS nation,
         c.c_name AS customer,
         SUM(o.o_totalprice) AS revenue
     FROM samples.tpch.customer AS c
     INNER JOIN samples.tpch.nation AS n ON c.c_nationkey = n.n_nationkey
     INNER JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
-    GROUP BY n.n_name, c.c_name
+    GROUP BY n.n_name, c.c_custkey, c.c_name
 ),
 
 ranked AS (
@@ -19,9 +21,9 @@ ranked AS (
         nation,
         customer,
         revenue,
-        RANK() OVER (
+        ROW_NUMBER() OVER (
             PARTITION BY nation
-            ORDER BY revenue DESC
+            ORDER BY revenue DESC, c_custkey
         ) AS revenue_rank
     FROM customer_revenue
 )

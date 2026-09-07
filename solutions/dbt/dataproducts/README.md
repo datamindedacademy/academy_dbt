@@ -5,7 +5,7 @@ Run the supplied models and inspect their output. No exercise edits are required
 
 ## Build and view the report
 
-Complete [Databricks setup](../../../docs/setup_instructions.md#databricks-free-edition) first.
+Complete [Databricks setup](../../../docs/setup_instructions.md) first.
 Use the course container, or activate the local environment described below.
 Run these commands from the repository root:
 
@@ -182,4 +182,4 @@ For dbt Power User, select its Python interpreter through **Python: Select Inter
 Use `.venv/bin/python` locally, or the installed Python interpreter in the course container.
 Keep the dbt integration setting at `core`.
 
-For SQL files and extension differences, see [VS Code setup](../../../docs/setup_instructions.md#sql-and-dbt-in-vs-code).
+For SQL files and extension differences, see [Databricks setup](../../../docs/setup_instructions.md).

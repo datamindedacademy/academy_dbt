@@ -1,0 +1,9 @@
+version: 2
+sources:
+  - name: tpch
+    database: samples
+    schema: tpch
+    tables:
+      - name: customer
+      - name: orders
+      - name: nation

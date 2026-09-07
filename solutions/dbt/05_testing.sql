@@ -1,44 +1,22 @@
--- Solutions: dbt exercise 5 — Testing
--- A singular test selects the WRONG rows: 0 rows returned = test passed.
--- Compiled form below. In the project, {{ ref('customer_stats') }} replaces
--- the CTE.
-
--- tests/customer_stats_no_negative_spending.sql
+-- Solution: dbt exercise 5. A SQL test passes when it returns zero rows.
+-- First fix models/example/my_first_dbt_model.sql to return only id = 1.
+-- Run dbt build to replace its data and run the starter tests.
+--
+-- Extend models/customer_stats.yml with these tests on c_custkey:
+--   data_tests: [unique, not_null]
+--
+-- tests/customer_stats_nonnegative.sql:
+--   SELECT c_custkey, total_spent
+--   FROM {{ ref('customer_stats') }}
+--   WHERE total_spent < 0
+--
+-- Plain SQL equivalent:
 WITH customer_stats AS (
-    SELECT
-        c.c_custkey,
-        SUM(o.o_totalprice) AS total_spent
+    SELECT c.c_custkey, SUM(o.o_totalprice) AS total_spent
     FROM samples.tpch.customer AS c
-    INNER JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
+    LEFT JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
     GROUP BY c.c_custkey
 )
-SELECT *
+SELECT c_custkey, total_spent
 FROM customer_stats
 WHERE total_spent < 0;
-
--- tests/customer_stats_not_empty.sql
--- Filtering an empty table also gives 0 rows, so assert non-emptiness
--- explicitly with count(*):
-WITH customer_stats AS (
-    SELECT
-        c.c_custkey,
-        SUM(o.o_totalprice) AS total_spent
-    FROM samples.tpch.customer AS c
-    INNER JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
-    GROUP BY c.c_custkey
-)
-SELECT COUNT(*) AS n
-FROM customer_stats
-HAVING COUNT(*) = 0;
-
--- Generic tests go in models/schema.yml (not runnable as plain SQL):
---   models:
---     - name: customer_stats
---       columns:
---         - name: c_custkey
---           data_tests:
---             - unique
---             - not_null
---         - name: total_spent
---           data_tests:
---             - not_null

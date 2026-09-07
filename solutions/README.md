@@ -1,31 +1,36 @@
 # Solutions
 
-Solution SQL for every exercise, written for **Databricks** (catalog
-`samples`, schema `tpch` — the built-in TPC-H dataset).
+These answers use the Databricks `samples.tpch` data and follow the exercises on `main`.
 
-## Run the complete data products
+- [SQL answers](sql/): select one query at a time in the Databricks SQL editor.
+- [dbt answers](dbt/README.md): commands, explanations, and links for exercises 1–11.
+- [Completed dbt exercises](dbt/exercises/): run the exercise models with one `dbt build`.
+- [Data-product demo](dbt/dataproducts/) and [SQL pipeline](sql_pipeline/): the separate demonstration after exercise 11.
 
-Use [the complete dbt project](dbt/dataproducts/) and [the SQL pipeline](sql_pipeline/) to build the same eight models.
-The [SQL pipeline guide](sql_pipeline/) gives the commands to run and compare both versions.
-No exercise edits are required.
+Use the [Databricks setup guide](../docs/setup_instructions.md) for the connection.
+The [pipeline guide](sql_pipeline/) explains how to compare the two data-product implementations.
 
-## Run the SQL examples
+## Exercise and slide map
 
-- **SQLTools with the Databricks driver / Databricks SQL editor:** select a query and run it against your SQL warehouse.
-- **Databricks extension:** use it for Databricks notebooks and jobs. It does not execute these dbt models against a SQL warehouse.
-- **On Postgres** (the codespace database): remove the `samples.` prefix —
-  the tables live in schema `tpch` there. The data-product project targets Databricks only.
+Slide numbers refer to the 171-slide Databricks edition of SQL & dbt Winterschool 2026.
+The slides use the former project name `dbt_test`. The repository uses `dbt_academy`, as agreed for the course.
+The exercise tasks are the same.
 
-See [VS Code setup](../docs/setup_instructions.md#sql-and-dbt-in-vs-code).
-
-## Layout
-
-- [`sql/`](sql/) — one file per SQL exercise, numbered like the exercises.
-- [`sql_pipeline/`](sql_pipeline/) — complete SQL statements, data checks, and the ordered Python runner.
-- [`dbt/dataproducts/`](dbt/dataproducts/) — a complete dbt project with source-aligned and consumer-aligned products.
-- [`dbt/`](dbt/) — the dbt exercises whose solution is SQL, in *compiled* form
-  (plain SQL, runnable directly), with the original dbt/Jinja code in comments.
-  Exercises whose solution is a command or YAML (1, 3, 4, 6, 10, 11) are
-  answered in [`dbt/README.md`](dbt/README.md).
-
-Run the supplied examples directly, or use the exercises for optional practice.
+| Exercise | Slides | Answer |
+|---|---|---|
+| SQL 1: Select and filter | 20 | [SQL](sql/01_select_and_filter.sql) |
+| SQL 2: Joins | 27 | [SQL](sql/02_joins.sql) |
+| SQL 3: Aggregations | 32–33 | [SQL](sql/03_group_by_and_aggregations.sql) |
+| SQL 4: CTEs | 36 | [SQL](sql/04_ctes.sql) |
+| SQL 5: Window functions | 38–39 | [SQL](sql/05_window_functions.sql) |
+| dbt 1: Project | 51 | [Answer](dbt/README.md#1-create-the-project) |
+| dbt 2: Sources | 57 | [Answer](dbt/README.md#2-declare-sources-and-build-models) |
+| dbt 3: Materializations | 59 | [Answer](dbt/README.md#3-choose-tables-or-views) |
+| dbt 4: Documentation | 63 | [Answer](dbt/README.md#4-explore-documentation) |
+| dbt 5: Tests | 71 | [Answer](dbt/README.md#5-detect-invalid-output) |
+| dbt 6: Selectors | 77–78 | [Answer](dbt/README.md#6-select-models-from-the-example-graph) |
+| dbt 7: Variables | 84 | [Answer](dbt/README.md#7-filter-with-date-variables) |
+| dbt 8: Loops | 89 | [Answer](dbt/README.md#8-generate-status-counts) |
+| dbt 9: Macros | 94 | [Answer](dbt/README.md#9-reuse-the-date-filter) |
+| dbt 10: Seeds and snapshots | 120–121 | [Answer](dbt/README.md#10-upload-a-seed-and-record-history) |
+| dbt 11: Country report | 122 | [Answer](dbt/README.md#11-build-the-country-report) |

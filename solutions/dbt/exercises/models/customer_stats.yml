@@ -1,0 +1,18 @@
+version: 2
+models:
+  - name: customer_stats
+    description: Total order value and status counts per customer, including customers without orders.
+    columns:
+      - name: c_custkey
+        description: Customer identifier.
+        data_tests: [unique, not_null]
+      - name: c_name
+        description: Customer name.
+      - name: total_spent
+        description: Sum of full order amounts. NULL when the customer has no orders.
+      - name: num_orders_with_status_o
+        description: Number of orders with status O.
+      - name: num_orders_with_status_p
+        description: Number of orders with status P.
+      - name: num_orders_with_status_f
+        description: Number of orders with status F.

@@ -31,20 +31,20 @@ SELECT
     AVG(o.o_totalprice) AS avg_spent
 FROM samples.tpch.customer AS c
 INNER JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
-GROUP BY c.c_name
+GROUP BY c.c_custkey, c.c_name
 ORDER BY total_spent DESC;
 
 -- 6. All the customers that have placed more than 25 orders
 SELECT c.c_name, COUNT(*) AS num_orders
 FROM samples.tpch.customer AS c
 INNER JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
-GROUP BY c.c_name
+GROUP BY c.c_custkey, c.c_name
 HAVING COUNT(*) > 25;
 
--- 7. The customers that have placed more than 15 orders above 100 000 euros
+-- 7. The customers that have placed more than 15 orders above 100 000
 SELECT c.c_name, COUNT(*) AS num_big_orders
 FROM samples.tpch.customer AS c
 INNER JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
 WHERE o.o_totalprice > 100000        -- filters individual orders
-GROUP BY c.c_name
+GROUP BY c.c_custkey, c.c_name
 HAVING COUNT(*) > 15;                -- filters customer groups

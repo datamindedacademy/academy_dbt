@@ -1,0 +1,18 @@
+version: 2
+models:
+  - name: int_orders_with_nation
+    description: Orders in the report interval, with the customer's nation.
+  - name: revenue_per_nation
+    description: Customer counts, order counts, and total order value per nation in the report interval.
+    columns:
+      - name: nation_key
+        description: Identifier of the customer's nation.
+        data_tests: [unique, not_null]
+      - name: nation
+        description: Name of the customer's nation.
+      - name: customers
+        description: Distinct customers with orders in the report interval.
+      - name: orders
+        description: Number of orders in the report interval.
+      - name: revenue
+        description: Sum of full order amounts across all statuses. No currency is specified.

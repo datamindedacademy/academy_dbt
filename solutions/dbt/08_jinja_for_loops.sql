@@ -12,7 +12,7 @@
 --       {% if not loop.last %},{% endif %}
 --       {% endfor %}
 --   FROM {{ ref('stg_customer') }} AS c
---   INNER JOIN {{ ref('stg_orders') }} AS o ON o.o_custkey = c.c_custkey
+--   LEFT JOIN {{ ref('stg_orders') }} AS o ON o.o_custkey = c.c_custkey
 --   GROUP BY c.c_custkey, c.c_name
 --
 -- (Optional) the variable in dbt_project.yml:
@@ -26,5 +26,5 @@ SELECT
     SUM(CASE WHEN o.o_orderstatus = 'P' THEN 1 ELSE 0 END) AS num_orders_with_status_p,
     SUM(CASE WHEN o.o_orderstatus = 'F' THEN 1 ELSE 0 END) AS num_orders_with_status_f
 FROM samples.tpch.customer AS c
-INNER JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
+LEFT JOIN samples.tpch.orders AS o ON o.o_custkey = c.c_custkey
 GROUP BY c.c_custkey, c.c_name;

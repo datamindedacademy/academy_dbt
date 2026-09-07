@@ -19,9 +19,10 @@ FROM samples.tpch.orders;
 
 -- 4. For each order: the order key and the total price multiplied by the
 --    order's priority (the leading digit of o_orderpriority)
+-- LEFT takes the first character: '3-MEDIUM' becomes '3'. CAST converts it to a number.
 SELECT
     o_orderkey,
-    o_totalprice * CAST(SUBSTRING(o_orderpriority, 1, 1) AS INT) AS price_times_priority
+    o_totalprice * CAST(LEFT(o_orderpriority, 1) AS INT) AS price_times_priority
 FROM samples.tpch.orders;
 
 -- 5. All the orders where the order comment contains the word "express"

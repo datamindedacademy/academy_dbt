@@ -1,106 +1,176 @@
-# dbt solutions
+# dbt exercise solutions
 
-Run the complete [TPC-H data-product project](dataproducts/) to build models and inspect their output.
-It includes all model SQL, contracts, data tests, a unit test, and a plain SQL comparison.
-No exercise edits are required.
+The answers follow dbt exercises 1–11 on `main` and the Databricks slides.
+Use `dbt_academy` as the project name. The deck still uses its previous name, `dbt_test`.
 
-The numbered `.sql` files below are standalone answer snippets.
-They contain multiple example queries and commented dbt code.
-They are not individual dbt models or a dbt project.
-Use SQLTools or the Databricks SQL editor for these snippets.
-Use `dbt build` inside `dataproducts` for the complete project.
+Run the completed models from [exercises/](exercises/).
+The numbered SQL files contain plain SQL equivalents and commented dbt examples.
+Select one plain SQL query at a time in the Databricks SQL editor.
+The separate [data-product demo](dataproducts/) follows exercise 11.
 
-## Exercise answers
+## 1. Create the project
 
-The `.sql` files in this folder cover the dbt exercises whose solution is SQL.
-The other exercises are answered here: their solutions are commands, YAML, or
-observations.
+From the repository root, follow the [setup guide](../../docs/setup_instructions.md).
+`dbt init dbt_academy --skip-profile-setup` creates the starter project.
+After `dbt run`, the first model has `1` and `NULL`. The second model has only `1`.
+The completed solution already includes the null fix from exercise 5.
 
-## Exercise 1 — Your first dbt project
+## 2. Declare sources and build models
 
-- `dbt debug` succeeds when the connection details are correct.
-- Before `dbt run`: `samples.tpch` contains the source tables.
-  The destination schema `workspace.dbt` may not exist yet.
-- After `dbt run`: two new objects appear.
-- `my_first_dbt_model` builds a **table** with 2 rows (`id` = 1 and NULL);
-  it has `{{ config(materialized='table') }}` at the top.
-- `my_second_dbt_model` builds a **view** that selects the row with `id = 1`
-  from the first model, via `{{ ref('my_first_dbt_model') }}`.
+See [the SQL answer](02_sources_and_staging.sql) and [the source declaration](exercises/models/sources.yml).
+Use a left join to retain customers without orders. Their `total_spent` is NULL.
+The completed [customer_stats](exercises/models/customer_stats.sql) also includes the loop from exercise 8.
 
-## Exercise 3 — Materializations
+## 3. Choose tables or views
 
-1. `customer_stats` is a **view**: `view` is dbt's default materialization.
-2. After `+materialized: table` in `dbt_project.yml`: it is a **table** —
-   the project config now applies to all models in the folder.
-3. After adding `{{ config(materialized='view') }}` in the model: it is a
-   **view** again — config in the model itself "trumps" `dbt_project.yml`.
+`customer_stats` starts as a view because dbt defaults to views.
+The project setting changes it to a table:
 
-## Exercise 4 — Documentation
+```yaml
+models:
+  dbt_academy:
+    +materialized: table
+```
 
-- `dbt docs generate` then `dbt docs serve`; open the forwarded port (8080).
-- The lineage graph of `customer_stats` shows:
-  source `tpch.customer`/`tpch.orders` (green) → `stg_customer`/`stg_orders`
-  → `customer_stats`.
+The model setting `{{ config(materialized='view') }}` changes it back to a view.
+The completed project contains both settings to show that the model setting takes precedence.
 
-## Exercise 6 — Running specific models
+## 4. Explore documentation
 
-1. `session` and everything downstream, except `agg_per_user`:
+From the repository root:
+
+```bash
+dbt docs generate --project-dir solutions/dbt/exercises
+dbt docs serve --project-dir solutions/dbt/exercises --port 8080
+```
+
+Open port **8080** in Codespaces.
+Trace `tpch.customer → stg_customer → customer_stats` and `tpch.orders → stg_orders → customer_stats`.
+See [model and column descriptions](exercises/models/customer_stats.yml).
+
+## 5. Detect invalid output
+
+The starter `not_null` test fails because the first model contains NULL.
+The fix is `select 1 as id` in [my_first_dbt_model.sql](exercises/models/example/my_first_dbt_model.sql).
+Run `dbt build` after the edit to replace the data before the tests run.
+
+[customer_stats.yml](exercises/models/customer_stats.yml) tests `c_custkey` with `unique` and `not_null`.
+[customer_stats_nonnegative.sql](exercises/tests/customer_stats_nonnegative.sql) selects negative totals.
+A SQL test passes when it returns zero rows. See the [plain SQL answer](05_testing.sql).
+
+## 6. Select models from the example graph
+
+These commands answer the slide's graph exercise. The example graph is separate from the TPC-H project.
+
+1. Run `session` and its descendants, except `agg_per_user`:
+
    ```bash
    dbt run --select session+ --exclude agg_per_user
    ```
-2. `session` and its descendants that are also ancestors of `agg_per_program`
-   (intersection = comma, no space):
+
+2. Intersect descendants of `session` with ancestors of `agg_per_program`:
+
    ```bash
    dbt run --select session+,+agg_per_program
    ```
-3. Everything that depends on the `schedule` source table:
+
+3. Select models affected by the source change:
+
    ```bash
-   dbt run --select source:my_source.schedule+
+   dbt run --select source:app.schedule+
    ```
-4. Tag `agg_per_program` and `agg_per_user` with `daily`, and
-   `least_popular_program` with `monthly`. Then:
-   - daily: `dbt run --select tag:daily`
-   - monthly (after the daily run): `dbt run --select tag:monthly`
 
-   Tags keep the schedule definition in one place: moving a model between the
-   daily and monthly runs is a one-line change.
+4. Add `{{ config(tags=['daily']) }}` to `agg_per_program` and `agg_per_user`.
+   Add `{{ config(tags=['monthly']) }}` to `least_popular_program`.
+   Run daily models with their upstream models, then run the monthly model after the daily run:
 
-## Exercise 10 — Seeds and snapshots
+   ```bash
+   dbt run --select +tag:daily
+   dbt run --select tag:monthly
+   ```
 
-- Strategy: **check** — the seed has no `updated_at` column, so the
-  `timestamp` strategy cannot work. Compare all columns:
-  `check_cols: all`.
-- After the first `dbt snapshot`: 5 rows, all with `dbt_valid_to = NULL`.
-- After adding China: `dbt seed` + `dbt snapshot` adds **1** row.
-- After adding the `continent` column: `dbt seed` **fails** (dbt truncates and
-  re-inserts; the column list no longer matches). Fix:
-  `dbt seed --full-refresh`. The next `dbt snapshot` then sees every row as
-  changed (a new column value in each), so it invalidates all 6 old rows and
-  inserts **6** new ones.
+## 7. Filter with date variables
 
-## Exercise 11 — Capstone
+See [the variables and SQL answer](07_jinja_variables.sql).
+Both dates are inclusive: `1995-01-01` through `1995-03-31`.
+[orders_date_in_range.sql](exercises/tests/orders_date_in_range.sql) returns rows outside those dates.
+The completed [orders model](exercises/models/orders.sql) uses the equivalent macro from exercise 9.
 
-For the TPC-H capstone:
+## 8. Generate status counts
 
-- `stg_nation`, `stg_customer`, and `stg_orders` read the three sources.
-- `int_orders_with_nation` joins the staging models and applies the report interval macro.
-- `revenue_per_nation` groups by `nation_key` and `nation`.
-  It counts distinct customers, counts orders, and sums `o_totalprice`.
-- Apply `unique` and `not_null` tests to `nation_key`.
-- The singular test selects rows where `revenue < 0`.
-- Compare sorted results with the query in exercise 11.
+See [the loop and plain SQL answer](08_jinja_for_loops.sql).
+Count O, P, and F into `num_orders_with_status_o`, `num_orders_with_status_p`, and `num_orders_with_status_f`.
+Customers without orders have zero in all three columns.
+The [completed model](exercises/models/customer_stats.sql) uses a loop and the `order_statuses` project variable.
 
-### Optional Covid reference
+## 9. Reuse the date filter
 
-The capstone is a full dbt project, not a single file. Model split, following
-the staging / intermediate / marts layering:
+[is_in_reporting_interval](exercises/macros/is_in_reporting_interval.sql) accepts a column and returns the inclusive date condition.
+[orders.sql](exercises/models/orders.sql) calls it with `o_orderdate`.
+See the [plain SQL answer](09_macros.sql).
 
-- `1_staging/`: `stg_cases_muni`, `stg_vacc_muni_cum`, `stg_population`
-  (thin `SELECT`s over the sources)
-- `2_intermediate/`: `int_vaccinations_per_municipality`,
-  `int_cases_per_municipality` (the logic of views 1 and 2)
-- `3_marts/`: `covid_stats_per_municipality` (view 3: the joins and the
-  per-capita columns)
+For the optional package task, create `packages.yml`:
 
-The covid dataset is not in the Databricks `samples` catalog; upload it first
-(see the note in the capstone exercise).
+```yaml
+packages:
+  - package: dbt-labs/dbt_utils
+    version: 1.3.0
+```
+
+Run `dbt deps`, then build `stg_orders` before the macro reads its values.
+Replace the status list in the loop with:
+
+```jinja
+{% set statuses = dbt_utils.get_column_values(ref('stg_orders'), 'o_orderstatus') %}
+{% for status in statuses %}
+```
+
+The completed project uses the project variable and needs no package download.
+
+## 10. Upload a seed and record history
+
+The [CSV](exercises/seeds/country_codes.csv) starts with US, CA, GB, BE, and NL.
+The [snapshot](exercises/snapshots/country_codes_snapshot.yml) uses `country_code`, strategy `check`, and `check_cols: all`.
+Run from the repository root:
+
+```bash
+dbt seed --project-dir solutions/dbt/exercises
+dbt snapshot --project-dir solutions/dbt/exercises
+```
+
+Add `CN,China` to the CSV. Run both commands again.
+Then add a `continent` column and fill every row.
+`dbt seed` fails because the existing table has only two columns. Run:
+
+```bash
+dbt seed --full-refresh --project-dir solutions/dbt/exercises
+dbt snapshot --project-dir solutions/dbt/exercises
+```
+
+For a fresh snapshot, the expected counts are:
+
+| State | Seed rows | Current versions | Historical versions | Total snapshot rows |
+|---|---:|---:|---:|---:|
+| Initial five countries | 5 | 5 | 0 | 5 |
+| China added | 6 | 6 | 0 | 6 |
+| Continent added to all rows | 6 | 6 | 6 | 12 |
+
+Current versions have `dbt_valid_to IS NULL`.
+
+## 11. Build the country report
+
+[stg_nation](exercises/models/stg_nation.sql) reads the nation source.
+[int_orders_with_nation](exercises/models/int_orders_with_nation.sql) joins the three staging models and applies the date macro.
+[revenue_per_nation](exercises/models/revenue_per_nation.sql) returns `nation_key`, `nation`, `customers`, `orders`, and `revenue`.
+It uses the customer's nation and full order value across all statuses.
+
+The [YAML tests](exercises/models/revenue_per_nation.yml) check unique, non-null nation keys.
+The [SQL test](exercises/tests/revenue_per_nation_nonnegative.sql) detects negative revenue.
+See [the equivalent SQL](11_country_report.sql).
+After `dbt build`, run the comparison:
+
+```bash
+dbt show --project-dir solutions/dbt/exercises --select compare_country_report
+```
+
+Zero rows means both reports match, including duplicate counts.

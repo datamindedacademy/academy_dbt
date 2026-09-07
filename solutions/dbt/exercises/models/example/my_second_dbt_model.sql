@@ -1,0 +1,5 @@
+{{ config(materialized='view') }}
+
+select id
+from {{ ref('my_first_dbt_model') }}
+where id = 1

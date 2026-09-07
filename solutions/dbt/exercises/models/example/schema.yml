@@ -1,0 +1,12 @@
+version: 2
+models:
+  - name: my_first_dbt_model
+    description: Starter model after the null fix in exercise 5.
+    columns:
+      - name: id
+        data_tests: [unique, not_null]
+  - name: my_second_dbt_model
+    description: The row with id 1 from the first model.
+    columns:
+      - name: id
+        data_tests: [unique, not_null]

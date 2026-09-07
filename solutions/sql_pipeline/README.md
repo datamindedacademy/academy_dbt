@@ -3,7 +3,7 @@
 This pipeline builds the same eight objects as [the dbt project](../dbt/dataproducts/).
 It uses SQL files and a Python runner. It does not invoke dbt.
 
-Complete [Databricks setup](../../docs/setup_instructions.md#databricks-free-edition), then run these commands from the repository root:
+Complete [Databricks setup](../../docs/setup_instructions.md), then run these commands from the repository root:
 
 ```bash
 ./create_profiles.sh --target databricks
