@@ -46,19 +46,6 @@ Snowflake is optional; see [the setup instructions](docs/setup_instructions.md).
 Exercise 11 includes a TPC-H capstone with the existing sample data.
 The Covid version needs separate data and SQL changes.
 
-## Check the setup
-
-After profile setup, run this from the repository root:
-
-```bash
-python checks/check_setup.py
-```
-
-The check reads all eight source tables. It creates a temporary schema to test
-models, tests, seeds, snapshot changes, and documentation. It then removes that schema.
-For the local backup, use `python checks/check_setup.py --target postgres`.
-See [the setup check](docs/setup_instructions.md#7-check-the-remaining-dbt-features) for the expected result.
-
 ## Resources
 
 - Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)

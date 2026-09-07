@@ -213,22 +213,6 @@ This expected failure confirms that the test detects the null value.
 Continue with the [SQL exercises](../exercises/sql/) or [dbt exercises](../exercises/dbt/).
 Exercise 1 uses the project you create in this setup.
 
-### 7. Check the remaining dbt features
-
-From the repository root, run the optional course check:
-
-```bash
-python checks/check_setup.py
-```
-
-The check reads all eight sample tables.
-It tests views, a table, data tests, seeds, snapshot history, and documentation.
-It creates a separate temporary schema and removes that schema after the check.
-A successful check ends with `PASS`.
-
-The [SQL exercises](../exercises/sql/) and [dbt exercises](../exercises/dbt/) remain available for optional practice.
-Exercise 1 creates a separate starter project.
-
 ### Replace an expired token or rebuild a codespace
 
 Generate a new token in the same workspace. Replace `DATABRICKS_TOKEN` in `.env`.
