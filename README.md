@@ -1,39 +1,66 @@
 # Data Minded Academy - dbt
-## Exercises Repository
+## SQL and dbt exercises
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/datamindedacademy/academy_dbt)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/datamindedacademy/academy_dbt?ref=feature%2Fdatabricks-classroom-setup)
 
-This repository is hosting the exercises provided to students in the context of the dbt course of the Dataminded Academy.
+This repository contains exercises for the SQL & dbt course of the Dataminded Academy.
 
-To start click on "Open in codespaces" button.
+## Start the Databricks course
 
-### Connecting to Postgres
+1. Open a codespace with the button above.
+2. Follow [the setup instructions](docs/setup_instructions.md#databricks-free-edition) to create your Databricks workspace and token.
+3. Copy `.env.example` to `.env`. Enter the host, warehouse HTTP path, and token.
+4. Run these commands in the repository root:
 
-You can connect to the Postgres database in one of three ways:
-
-1. **Using SQLTools** (the VSCode extension): Click the extension icon on the left. It has the right credentials.
-2. **Using PGAdmin:** Click on Ports > click on the URL of the forwarded address of port 5052.
-3. **Using dbt:** Run `dbt init`, choose postgres, and enter the following credentials:
-    * hostname: db
-    * port: 5432
-    * database: postgres
-    * username: postgres
-    * password: postgres
-
-### Connecting to Snowflake
-
-You can also use `dbt init` to set up a connection to the Snowflake data warehouse,
-and modify the `profiles.yml` that is created to include:
-
-```
-    authenticator: username_password_mfa
+```bash
+dbt init dbt_test --skip-profile-setup
+./create_profiles.sh --target databricks
+dbt debug --project-dir dbt_test
+dbt run --project-dir dbt_test
 ```
 
-The connection details are not stored in the workspace itself (but in `~/.dbt/profiles.yml` instead)
-so every time the workspace times out, the connection settings are lost. In that case, you can
-run the script `/workspace/create_profiles.sh` to re-generate this file easily.
+Skip `dbt init` if the `dbt_test` project already exists.
+A successful `dbt debug` confirms the connection.
+The example models appear in `workspace.dbt`.
+The starter project contains one deliberate null value, so its `not_null` test fails until exercise 5 fixes it.
 
-### Resources:
+Use the Databricks SQL editor for the [SQL exercises](exercises/sql/).
+Use the codespace terminal for the [dbt exercises](exercises/dbt/).
+See [VS Code setup](docs/setup_instructions.md#sql-and-dbt-in-vs-code) for SQLTools and dbt Power User.
+
+## Database targets
+
+`./create_profiles.sh` selects Databricks when all three credentials exist.
+Otherwise, it selects the local Postgres database in the codespace.
+Run the script again from the repository root after each `dbt init` or container rebuild.
+
+```bash
+./create_profiles.sh --target databricks  # Databricks course
+./create_profiles.sh --target postgres    # local backup
+```
+
+The script creates only the targets with complete settings, plus Postgres.
+For the backup, use SQLTools or pgAdmin on port 5052.
+Snowflake is optional; see [the setup instructions](docs/setup_instructions.md).
+
+Exercise 11 includes a TPC-H capstone with the existing sample data.
+The Covid version needs separate data and SQL changes.
+
+## Check the setup
+
+After profile setup, run this from the repository root:
+
+```bash
+python checks/check_setup.py
+```
+
+The check reads all eight source tables. It creates a temporary schema to test
+models, tests, seeds, snapshot changes, and documentation. It then removes that schema.
+For the local backup, use `python checks/check_setup.py --target postgres`.
+See [the setup check](docs/setup_instructions.md#7-check-the-remaining-dbt-features) for the expected result.
+
+## Resources
+
 - Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
 - Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
 - Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support

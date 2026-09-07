@@ -1,0 +1,12 @@
+name: academy_check
+version: '1.0.0'
+config-version: 2
+profile: academy_check
+model-paths: [models]
+seed-paths: [seeds]
+snapshot-paths: [snapshots]
+macro-paths: [macros]
+test-paths: [tests]
+vars:
+  report_interval_start: '1995-01-01'
+  report_interval_end: '1995-03-31'

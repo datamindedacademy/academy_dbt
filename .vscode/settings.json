@@ -1,4 +1,11 @@
 {
     "dbt.queryLimit": 500,
+    "dbt.dbtIntegration": "core",
+    "files.associations": {
+        "**/analyses/**/*.sql": "jinja-sql",
+        "**/models/**/*.sql": "jinja-sql",
+        "**/macros/**/*.sql": "jinja-sql",
+        "**/tests/**/*.sql": "jinja-sql"
+    },
     "dbt.enableNewLineagePanel": true
 }
